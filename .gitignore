@@ -1,0 +1,66 @@
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.out
+*.test
+/uploads
+/thumbs
+TODO.md
+wireless_gallery.db
+
+# Output folders
+bin/
+_build/
+build/
+dist/
+out/
+pkg/
+
+# Dependency directories
+vendor/
+node_modules/
+
+# Go tool/cache
+# (module cache is outside project; keep go.sum tracked)
+*.cover
+coverage.*
+coverage.out
+
+# Editor/IDE
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*~
+.project
+.classpath
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.secret
+TODO.md
+
+# Logs and runtime files
+*.log
+*.pid
+
+# Container / docker
+docker-compose.override.yml
+.envrc
+
+# Misc
+coverage/
+start_postgres.sh
+stop_postgres.sh

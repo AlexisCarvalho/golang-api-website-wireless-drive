@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Media Gallery</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --gradient-start: #6366f1;
+      --gradient-end: #8b5cf6;
+      --accent-bright: #a78bfa;
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #13111c;
+      --bg-card: #1c1825;
+      --accent: #7c3aed;
+      --accent-hover: #8b5cf6;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --border: rgba(139, 92, 246, 0.3);
+      --shadow: rgba(124, 58, 237, 0.4);
+    }
+
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+      background: var(--bg-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: 
+        linear-gradient(45deg, transparent 48%, rgba(99, 102, 241, 0.03) 50%, transparent 52%),
+        linear-gradient(-45deg, transparent 48%, rgba(139, 92, 246, 0.03) 50%, transparent 52%);
+      background-size: 60px 60px;
+      animation: gridMove 20s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    @keyframes gridMove {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(30px, 30px) rotate(0deg); }
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(80px);
+      opacity: 0.5;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .orb-1 {
+      top: 10%;
+      left: 10%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.3), transparent 70%);
+      animation-delay: 0s;
+    }
+
+    .orb-2 {
+      bottom: 15%;
+      right: 10%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.3), transparent 70%);
+      animation-delay: -10s;
+    }
+
+    .orb-3 {
+      top: 50%;
+      left: 50%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(167, 139, 250, 0.2), transparent 70%);
+      animation-delay: -5s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -30px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+    }
+
+    .container {
+      max-width: 480px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+    }
+
+    .auth-card {
+      background: linear-gradient(135deg, rgba(22, 33, 62, 0.7) 0%, rgba(26, 26, 46, 0.7) 100%);
+      backdrop-filter: blur(20px);
+      border: 2px solid var(--border);
+      border-radius: 28px;
+      padding: 48px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 1px rgba(99, 102, 241, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .auth-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa, #8b5cf6, #6366f1);
+      background-size: 300% 100%;
+      animation: gradientShift 4s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .logo-icon {
+      font-size: 4em;
+      margin-bottom: 16px;
+      display: inline-block;
+      filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.6));
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.6)); }
+      50% { transform: scale(1.08); filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.8)); }
+    }
+
+    .logo h1 {
+      background: linear-gradient(135deg, #6366f1 0%, #a78bfa 50%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 2em;
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .logo p {
+      color: var(--text-secondary);
+      font-size: 0.95em;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 36px;
+      background: rgba(99, 102, 241, 0.08);
+      padding: 6px;
+      border-radius: 16px;
+      border: 1px solid rgba(99, 102, 241, 0.15);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 14px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1em;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      position: relative;
+    }
+
+    .tab::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: -1;
+    }
+
+    .tab.active::before {
+      opacity: 1;
+    }
+
+    .tab.active {
+      color: white;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .tab:hover:not(.active) {
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--accent-bright);
+    }
+
+    .form-content {
+      display: none;
+    }
+
+    .form-content.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      color: var(--text-secondary);
+      font-size: 0.85em;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.3em;
+      color: var(--text-secondary);
+      pointer-events: none;
+      transition: all 0.3s ease;
+      opacity: 0.7;
+      z-index: 1;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 16px 18px 16px 52px;
+      background: rgba(99, 102, 241, 0.08);
+      border: 2px solid rgba(99, 102, 241, 0.2);
+      border-radius: 14px;
+      color: var(--text-primary);
+      font-size: 1em;
+      font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent-bright);
+      background: rgba(99, 102, 241, 0.12);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+      transform: translateY(-2px);
+    }
+
+    input:focus ~ .input-icon {
+      color: var(--accent-bright);
+      opacity: 1;
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    input::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.5;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 1.05em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      position: relative;
+      overflow: hidden;
+      margin-top: 12px;
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(139, 92, 246, 0.6);
+    }
+
+    .btn:active {
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .message {
+      margin-top: 24px;
+      padding: 16px 20px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 0.95em;
+      animation: slideIn 0.4s ease;
+      border: 2px solid;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .success {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: var(--accent-bright);
+      color: #a78bfa;
+    }
+
+    .error {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.6);
+      color: #fca5a5;
+    }
+
+    .footer-text {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.9em;
+      margin-top: 28px;
+      font-weight: 500;
+    }
+
+    .footer-text a {
+      color: var(--accent-bright);
+      text-decoration: none;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    .footer-text a:hover {
+      color: white;
+      background: rgba(99, 102, 241, 0.2);
+    }
+
+    .back-to-gallery {
+      text-align: center;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .back-to-gallery a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.95em;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      padding: 10px 20px;
+      border-radius: 12px;
+    }
+
+    .back-to-gallery a:hover {
+      color: var(--accent-bright);
+      background: rgba(99, 102, 241, 0.1);
+      transform: translateX(-4px);
+    }
+
+    .back-to-gallery a::before {
+      content: '←';
+      font-size: 1.3em;
+      transition: transform 0.3s ease;
+    }
+
+    .back-to-gallery a:hover::before {
+      transform: translateX(-4px);
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 480px) {
+      .auth-card {
+        padding: 36px 28px;
+        border-radius: 24px;
+      }
+
+      .logo h1 {
+        font-size: 1.7em;
+      }
+
+      .logo-icon {
+        font-size: 3.5em;
+      }
+
+      input[type="text"],
+      input[type="password"] {
+        padding: 14px 16px 14px 48px;
+      }
+
+      .btn {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="container">
+    <div class="auth-card">
+      <div class="logo">
+        <div class="logo-icon">📸</div>
+        <h1>Media Gallery</h1>
+        <p>Acesse sua galeria de mídias</p>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('login')">Login</button>
+        <button class="tab" onclick="switchTab('register')">Cadastro</button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="loginForm" class="form-content active">
+        <form onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label>Código</label>
+            <div class="input-wrapper">
+              <input type="text" id="loginCode" required pattern="[A-Za-z0-9]+" title="Apenas letras e números" placeholder="ex: abc123">
+              <span class="input-icon">🔐</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Senha</label>
+            <div class="input-wrapper">
+              <input type="password" id="loginPassword" required placeholder="••••••••">
+              <span class="input-icon">🔑</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn">Entrar</button>
+          <div id="loginMessage"></div>
+        </form>
+
+        <div class="footer-text">
+          Não tem uma conta? <a href="#" onclick="switchTab('register'); return false;">Cadastre-se</a>
+        </div>
+      </div>
+
+      <!-- Register Form -->
+      <div id="registerForm" class="form-content">
+        <form onsubmit="handleRegister(event)">
+          <div class="form-group">
+            <label>Nome</label>
+            <div class="input-wrapper">
+              <input type="text" id="registerName" required placeholder="Seu nome completo">
+              <span class="input-icon">👤</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Código</label>
+            <div class="input-wrapper">
+              <input type="text" id="registerCode" required pattern="[A-Za-z0-9]+" title="Apenas letras e números" placeholder="ex: abc123">
+              <span class="input-icon">🔐</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Senha</label>
+            <div class="input-wrapper">
+              <input type="password" id="registerPassword" required placeholder="••••••••">
+              <span class="input-icon">🔑</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn">Criar Conta</button>
+          <div id="registerMessage"></div>
+        </form>
+
+        <div class="footer-text">
+          Já tem uma conta? <a href="#" onclick="switchTab('login'); return false;">Faça login</a>
+        </div>
+      </div>
+
+      <div class="back-to-gallery">
+        <a href="/">Voltar para a galeria</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // GSAP Animation on load
+    window.addEventListener("DOMContentLoaded", function() {
+      gsap.to(".container", {
+        opacity: 1,
+        y: 0,
+        duration: 1.2,
+        ease: "power3.out"
+      });
+
+      // Subtle card entrance
+      gsap.from(".auth-card", {
+        scale: 0.95,
+        duration: 1.2,
+        ease: "power3.out"
+      });
+
+      // Stagger form elements
+      gsap.from(".logo > *", {
+        opacity: 0,
+        y: 20,
+        duration: 0.8,
+        stagger: 0.1,
+        ease: "power2.out",
+        delay: 0.3
+      });
+
+      gsap.from(".tabs, .form-content.active > *", {
+        opacity: 0,
+        y: 15,
+        duration: 0.6,
+        stagger: 0.08,
+        ease: "power2.out",
+        delay: 0.6
+      });
+    });
+
+    // Switch between login and register tabs
+    function switchTab(tab) {
+      const tabs = document.querySelectorAll('.tab');
+      const forms = document.querySelectorAll('.form-content');
+      
+      tabs.forEach(t => t.classList.remove('active'));
+      forms.forEach(f => f.classList.remove('active'));
+      
+      if (tab === 'login') {
+        tabs[0].classList.add('active');
+        document.getElementById('loginForm').classList.add('active');
+      } else {
+        tabs[1].classList.add('active');
+        document.getElementById('registerForm').classList.add('active');
+      }
+
+      // Clear messages
+      document.getElementById('loginMessage').textContent = '';
+      document.getElementById('registerMessage').textContent = '';
+
+      // Animate form elements on tab switch
+      gsap.from('.form-content.active .form-group', {
+        opacity: 0,
+        y: 15,
+        duration: 0.4,
+        stagger: 0.08,
+        ease: "power2.out"
+      });
+    }
+
+    // Helper para fazer requisições autenticadas
+    async function authFetch(url, opts = {}) {
+      const token = localStorage.getItem('authToken');
+
+      opts.headers = {
+        ...(opts.headers || {}),
+        ...(token ? { Authorization: 'Bearer ' + token } : {})
+      };
+
+      return fetch(url, opts);
+    }
+
+    // Handle login
+    async function handleLogin(e) {
+      e.preventDefault();
+      
+      const code = document.getElementById('loginCode').value;
+      const password = document.getElementById('loginPassword').value;
+      const messageDiv = document.getElementById('loginMessage');
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      
+      messageDiv.textContent = '';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Entrando...';
+
+      try {
+        const response = await fetch('/api/users/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, password })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          messageDiv.textContent = '✅ Login realizado com sucesso!';
+          messageDiv.className = 'message success';
+          
+          // Store token if provided
+          if (result.token) {
+            localStorage.setItem('authToken', result.token);
+          }
+          
+          // Redirect to gallery after success (com delay para garantir que o token foi salvo)
+          setTimeout(() => {
+            window.location.href = '/website/dashboard';
+          }, 500);
+        } else {
+          messageDiv.textContent = '❌ ' + (result.error || 'Código ou senha incorretos');
+          messageDiv.className = 'message error';
+        }
+      } catch (error) {
+        messageDiv.textContent = '❌ Erro ao conectar: ' + error.message;
+        messageDiv.className = 'message error';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Entrar';
+      }
+    }
+
+    // Handle register
+    async function handleRegister(e) {
+      e.preventDefault();
+      
+      const name = document.getElementById('registerName').value;
+      const code = document.getElementById('registerCode').value;
+      const password = document.getElementById('registerPassword').value;
+      const messageDiv = document.getElementById('registerMessage');
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      
+      messageDiv.textContent = '';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Criando...';
+
+      try {
+        const response = await fetch('/api/users/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, code, password })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          messageDiv.textContent = '✅ Conta criada com sucesso! Faça login.';
+          messageDiv.className = 'message success';
+          
+          // Clear form
+          document.getElementById('registerName').value = '';
+          document.getElementById('registerCode').value = '';
+          document.getElementById('registerPassword').value = '';
+          
+          // Switch to login tab after success
+          setTimeout(() => {
+            switchTab('login');
+            document.getElementById('loginCode').value = code;
+          }, 1500);
+        } else {
+          messageDiv.textContent = '❌ ' + (result.error || 'Erro ao criar conta');
+          messageDiv.className = 'message error';
+        }
+      } catch (error) {
+        messageDiv.textContent = '❌ Erro ao conectar: ' + error.message;
+        messageDiv.className = 'message error';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Criar Conta';
+      }
+    }
+
+    // Input animations
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+      input.addEventListener('focus', function() {
+        const wrapper = this.closest('.input-wrapper');
+        gsap.to(wrapper, {
+          scale: 1.02,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+      });
+
+      input.addEventListener('blur', function() {
+        const wrapper = this.closest('.input-wrapper');
+        gsap.to(wrapper, {
+          scale: 1,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+      });
+    });
+
+    // Button hover effect
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('mouseenter', function() {
+        gsap.to(this, {
+          scale: 1.02,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+      });
+
+      btn.addEventListener('mouseleave', function() {
+        gsap.to(this, {
+          scale: 1,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+      });
+    });
+  </script>
+</body>
+</html>

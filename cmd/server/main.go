@@ -1,0 +1,127 @@
+package main
+
+import (
+	"embed"
+	"io/fs"
+	"net/http"
+	"strconv"
+
+	"wireless_gallery/internal/config"
+	"wireless_gallery/internal/handler"
+	"wireless_gallery/internal/model"
+	"wireless_gallery/internal/repository"
+	service "wireless_gallery/internal/service"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+)
+
+//
+// EMBED OF FRONTEND
+//
+
+//go:embed static/*
+var staticFiles embed.FS
+
+func main() {
+	// =========================
+	// INITIAL CONFIGURATION
+	// =========================
+	config.LoadEnv()
+	config.ConnectDB()
+
+	config.DB.AutoMigrate(&model.User{}, &model.Media{})
+
+	// =========================
+	// GIN
+	// =========================
+	r := gin.Default()
+	r.Use(cors.Default())
+
+	// =========================
+	// FRONTEND (SPA)
+	// =========================
+
+	// Remove the prefix "static" of embed
+	subFS, err := fs.Sub(staticFiles, "static")
+	if err != nil {
+		panic("erro ao carregar arquivos estáticos")
+	}
+
+	// Static Files (JS, CSS, assets...)
+	r.StaticFS("/static", http.FS(subFS))
+
+	// Serve thumbnails from disk
+	thumbsDir := config.GetEnv("THUMBS_DIR", "thumbs")
+	r.Static("/thumbs", thumbsDir)
+
+	// =========================
+	// REPOSITORIES / SERVICES
+	// =========================
+	userRepo := repository.NewUserRepository(config.DB)
+	userService := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userService)
+
+	mediaRepo := repository.NewMediaRepository(config.DB)
+	mediaService := service.NewMediaService(mediaRepo)
+	mediaHandler := handler.NewMediaHandler(mediaService)
+
+	// =========================
+	// API ENDPOINTS (registered before page routes)
+	// =========================
+
+	userHandler.RegisterRoutes(r)
+	mediaHandler.RegisterRoutes(r)
+
+	// =========================
+	// PAGE ROUTES (after API to avoid intercepting API calls)
+	// =========================
+
+	// Serve pages - using /website/ prefix to avoid conflicts with API routes
+	r.GET("/website/account", func(c *gin.Context) {
+		c.FileFromFS("account.html", http.FS(subFS))
+	})
+
+	r.GET("/website/dashboard", func(c *gin.Context) {
+		c.FileFromFS("dashboard.html", http.FS(subFS))
+	})
+
+	r.GET("/website/upload", func(c *gin.Context) {
+		c.FileFromFS("upload.html", http.FS(subFS))
+	})
+
+	r.GET("/website/media/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		_, err := strconv.ParseUint(id, 10, 32)
+		if err != nil {
+			c.FileFromFS("account.html", http.FS(subFS))
+			return
+		}
+
+		// Fetch media from database to determine type
+		var media model.Media
+		if config.DB.First(&media, id).Error != nil {
+			c.FileFromFS("account.html", http.FS(subFS))
+			return
+		}
+
+		// Serve appropriate template based on media type
+		if media.Type == "video" {
+			c.FileFromFS("video.html", http.FS(subFS))
+		} else if media.Type == "image" {
+			c.FileFromFS("image.html", http.FS(subFS))
+		} else {
+			c.FileFromFS("file.html", http.FS(subFS))
+		}
+	})
+
+	// Redirect / to /website/account
+	r.GET("/", func(c *gin.Context) {
+		c.Redirect(302, "/website/account")
+	})
+
+	// =========================
+	// START SERVER
+	// =========================
+	r.Run(":8080")
+}

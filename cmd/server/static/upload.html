@@ -1,0 +1,823 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Upload - Media Gallery</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --gradient-start: #a78bfa;
+      --gradient-end: #c084fc;
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #13111c;
+      --bg-card: #1c1825;
+      --accent: #a78bfa;
+      --accent-hover: #c084fc;
+      --accent-secondary: #e9d5ff;
+      --text-primary: #f3f4f6;
+      --text-secondary: #c4b5fd;
+      --border: rgba(167, 139, 250, 0.2);
+      --shadow: rgba(167, 139, 250, 0.3);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 0;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(167, 139, 250, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(192, 132, 252, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: 
+        linear-gradient(45deg, transparent 48%, rgba(167, 139, 250, 0.03) 50%, transparent 52%),
+        linear-gradient(-45deg, transparent 48%, rgba(192, 132, 252, 0.03) 50%, transparent 52%);
+      background-size: 60px 60px;
+      animation: gridMove 20s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    @keyframes gridMove {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(30px, 30px) rotate(0deg); }
+    }
+
+    /* Orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(80px);
+      opacity: 0.5;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .orb-1 {
+      top: 10%;
+      left: 10%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(167, 139, 250, 0.3), transparent 70%);
+      animation-delay: 0s;
+    }
+
+    .orb-2 {
+      bottom: 15%;
+      right: 10%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(192, 132, 252, 0.3), transparent 70%);
+      animation-delay: -10s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -30px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .site-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 28px 24px;
+      margin-bottom: 48px;
+      background: linear-gradient(135deg, rgba(28, 24, 37, 0.95) 0%, rgba(19, 17, 28, 0.95) 100%);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      border: 2px solid var(--border);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 1px rgba(167, 139, 250, 0.5);
+      opacity: 0;
+      animation: fadeInDown 0.8s ease forwards;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .site-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #a78bfa, #c084fc, #e9d5ff, #c084fc, #a78bfa);
+      background-size: 300% 100%;
+      animation: gradientShift 4s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .site-header h1 {
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      background: linear-gradient(135deg, #a78bfa 0%, #e9d5ff 50%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 800;
+      letter-spacing: -1px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .site-header h1::before {
+      content: '📸';
+      font-size: 1.3em;
+      filter: drop-shadow(0 0 15px rgba(167, 139, 250, 0.6));
+      animation: iconPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes iconPulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(167, 139, 250, 0.6)); }
+      50% { transform: scale(1.08); filter: drop-shadow(0 0 25px rgba(192, 132, 252, 0.8)); }
+    }
+
+    .site-header h1 a {
+      text-decoration: none;
+      background: linear-gradient(135deg, #a78bfa 0%, #e9d5ff 50%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      transition: all 0.3s ease;
+      display: inline-block;
+    }
+
+    .site-header h1 a:hover {
+      transform: scale(1.05);
+      filter: brightness(1.2);
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      text-decoration: none;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 8px 25px rgba(167, 139, 250, 0.4);
+      position: relative;
+      overflow: hidden;
+      letter-spacing: 0.5px;
+    }
+
+    .back-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .back-button:hover::before {
+      left: 100%;
+    }
+
+    .back-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(192, 132, 252, 0.6);
+    }
+
+    .back-button:active {
+      transform: translateY(-1px);
+    }
+
+    .back-button span {
+      font-size: 1.2em;
+    }
+
+    /* Main Content */
+    main {
+      opacity: 0;
+      animation: fadeInUp 0.8s ease 0.2s forwards;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Upload Form */
+    .upload-form {
+      background: linear-gradient(135deg, rgba(28, 24, 37, 0.95) 0%, rgba(19, 17, 28, 0.95) 100%);
+      backdrop-filter: blur(10px);
+      border: 2px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-form::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #a78bfa, #c084fc, #e9d5ff, #c084fc, #a78bfa);
+      background-size: 300% 100%;
+      animation: gradientShift 4s ease infinite;
+    }
+
+    .upload-form h2 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .upload-form .subtitle {
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      font-size: 1rem;
+    }
+
+    .upload-form label {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 24px;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+
+    .upload-form input[type="text"],
+    .upload-form textarea {
+      margin-top: 8px;
+      padding: 14px 18px;
+      background: rgba(167, 139, 250, 0.05);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      font-family: inherit;
+      transition: all 0.3s ease;
+    }
+
+    .upload-form input[type="text"]:focus,
+    .upload-form textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(167, 139, 250, 0.1);
+      box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.1);
+    }
+
+    .upload-form textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .upload-form input::placeholder,
+    .upload-form textarea::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+
+    /* File Input */
+    .file-input-wrapper {
+      position: relative;
+      margin-top: 8px;
+    }
+
+    .upload-form input[type="file"] {
+      width: 100%;
+      padding: 14px 18px;
+      background: rgba(167, 139, 250, 0.05);
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .upload-form input[type="file"]:hover {
+      border-color: var(--accent);
+      background: rgba(167, 139, 250, 0.1);
+    }
+
+    .upload-form input[type="file"]::file-selector-button {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .upload-form input[type="file"]::file-selector-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(167, 139, 250, 0.4);
+    }
+
+    /* Submit Button */
+    .upload-form button[type="submit"] {
+      width: 100%;
+      padding: 16px 32px;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 24px rgba(167, 139, 250, 0.3);
+      margin-top: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-form button[type="submit"]::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .upload-form button[type="submit"]:hover::before {
+      left: 100%;
+    }
+
+    .upload-form button[type="submit"]:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(192, 132, 252, 0.5);
+    }
+
+    .upload-form button[type="submit"]:active {
+      transform: translateY(0);
+    }
+
+    .upload-form button[type="submit"]::after {
+      content: ' 🚀';
+    }
+
+    /* File Preview Area */
+    .file-preview {
+      margin-top: 24px;
+      padding: 20px;
+      background: rgba(167, 139, 250, 0.05);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      text-align: center;
+      display: none;
+    }
+
+    .file-preview .file-icon {
+      font-size: 3.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 140px;
+      width: 100%;
+      color: var(--text-secondary);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .file-preview.active {
+      display: block;
+      animation: fadeInUp 0.4s ease;
+    }
+
+    .file-preview img,
+    .file-preview video {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+
+    .file-preview p {
+      color: var(--text-secondary);
+      margin-top: 12px;
+      font-size: 0.9rem;
+    }
+
+    /* Tips Section */
+    .tips {
+      margin-top: 32px;
+      padding: 24px;
+      background: rgba(167, 139, 250, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+
+    .tips h3 {
+      color: var(--accent);
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tips h3::before {
+      content: '💡';
+    }
+
+    .tips ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .tips li {
+      color: var(--text-secondary);
+      padding: 8px 0;
+      padding-left: 24px;
+      position: relative;
+      font-size: 0.95rem;
+    }
+
+    .tips li::before {
+      content: '•';
+      position: absolute;
+      left: 8px;
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 16px;
+      }
+
+      .site-header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+        padding: 20px;
+        margin-bottom: 32px;
+      }
+
+      .upload-form {
+        padding: 24px;
+        border-radius: 20px;
+      }
+
+      .upload-form h2 {
+        font-size: 1.5rem;
+      }
+
+      .tips {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  
+  <header class="site-header">
+    <h1><a href="/">Media Gallery</a></h1>
+    <a href="/website/dashboard" class="back-button"><span>←</span> Voltar</a>
+  </header>
+
+  <main class="container">
+    <form class="upload-form" id="uploadForm" onsubmit="handleUpload(event)">
+      <h2>Fazer Upload</h2>
+      <p class="subtitle">Adicione suas fotos e vídeos à galeria</p>
+
+      <label>
+        Título
+        <input type="text" id="titleInput" name="title" placeholder="Digite um título para sua mídia" required>
+      </label>
+
+      <label>
+        Descrição
+        <textarea id="descriptionInput" name="description" placeholder="Adicione uma descrição (opcional)"></textarea>
+      </label>
+
+      <label>
+        Arquivo
+        <input type="file" name="file" id="fileInput" accept="image/*,video/*,application/pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip" required>
+      </label>
+
+      <div id="filePreview" class="file-preview"></div>
+
+      <button type="submit" id="submitBtn">Enviar Upload</button>
+      <div id="uploadMessage"></div>
+    </form>
+
+    <div class="tips">
+      <h3>Dicas</h3>
+      <ul>
+        <li>Formatos suportados: JPG, PNG, GIF, MP4, WebM, PDF, DOC, DOCX, PPT, XLS, TXT, ZIP</li>
+        <li>Tamanho máximo recomendado: 50MB (arquivos grandes podem falhar no upload)</li>
+        <li>Use títulos descritivos para facilitar a busca</li>
+        <li>Vídeos serão processados automaticamente</li>
+      </ul>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script>
+    // Animações GSAP
+    window.addEventListener("DOMContentLoaded", function() {
+      // Stagger header elements
+      gsap.from(".site-header > *", {
+        opacity: 0,
+        y: 20,
+        duration: 0.8,
+        stagger: 0.1,
+        ease: "power2.out",
+        delay: 0.3
+      });
+
+      gsap.from('.upload-form', {
+        opacity: 0,
+        y: 30,
+        duration: 0.8,
+        delay: 0.6,
+        ease: 'power3.out'
+      });
+
+      gsap.from('.tips', {
+        opacity: 0,
+        y: 20,
+        duration: 0.6,
+        delay: 0.8,
+        ease: 'power3.out'
+      });
+    });
+
+    // Preview do arquivo
+    var fileInput = document.getElementById('fileInput');
+    var filePreview = document.getElementById('filePreview');
+
+    fileInput.addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (file) {
+        filePreview.classList.add('active');
+        
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var fileType = file.type.split('/')[0];
+          var previewHTML = '';
+          
+          if (fileType === 'image') {
+            previewHTML = '<img src="' + e.target.result + '" alt="Preview">';
+          } else if (fileType === 'video') {
+            previewHTML = '<video src="' + e.target.result + '" controls></video>';
+          } else {
+            previewHTML = '<div class="file-icon">📄</div>';
+          }
+          
+          previewHTML += '<p><strong>' + file.name + '</strong> (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)</p>';
+          filePreview.innerHTML = previewHTML;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        filePreview.classList.remove('active');
+      }
+    });
+
+    // Animação no hover do formulário
+    var form = document.querySelector('.upload-form');
+    form.addEventListener('mouseenter', function() {
+      gsap.to(this, {
+        scale: 1.01,
+        duration: 0.3,
+        ease: 'power2.out'
+      });
+    });
+
+    form.addEventListener('mouseleave', function() {
+      gsap.to(this, {
+        scale: 1,
+        duration: 0.3,
+        ease: 'power2.out'
+      });
+    });
+
+    // Animação nos inputs em foco
+    var inputs = document.querySelectorAll('input, textarea');
+    inputs.forEach(function(input) {
+      input.addEventListener('focus', function() {
+        gsap.to(this, {
+          scale: 1.02,
+          duration: 0.2,
+          ease: 'power2.out'
+        });
+      });
+
+      input.addEventListener('blur', function() {
+        gsap.to(this, {
+          scale: 1,
+          duration: 0.2,
+          ease: 'power2.out'
+        });
+      });
+    });
+
+    // Back button hover effect
+    var backBtn = document.querySelector('.back-button');
+    if (backBtn) {
+      backBtn.addEventListener('mouseenter', function() {
+        gsap.to(this, {
+          scale: 1.05,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+      });
+
+      backBtn.addEventListener('mouseleave', function() {
+        gsap.to(this, {
+          scale: 1,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+      });
+    }
+
+    // Helper para fazer requisições autenticadas
+    async function authFetch(url, opts = {}) {
+      const token = localStorage.getItem('authToken');
+
+      opts.headers = {
+        ...(opts.headers || {}),
+        ...(token ? { Authorization: 'Bearer ' + token } : {})
+      };
+
+      return fetch(url, opts);
+    }
+
+    // Handle upload
+    async function handleUpload(e) {
+      e.preventDefault();
+
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        window.location.href = '/website/account';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', document.getElementById('fileInput').files[0]);
+      formData.append('title', document.getElementById('titleInput').value);
+      formData.append('description', document.getElementById('descriptionInput').value);
+
+      const submitBtn = document.getElementById('submitBtn');
+      const messageDiv = document.getElementById('uploadMessage');
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Enviando...';
+      messageDiv.textContent = '';
+
+      try {
+        const response = await authFetch('/api/media/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          messageDiv.textContent = '✅ Upload realizado com sucesso!';
+          messageDiv.className = 'message success';
+          
+          // Reset form
+          document.getElementById('uploadForm').reset();
+          document.getElementById('filePreview').classList.remove('active');
+          document.getElementById('titleInput').value = '';
+          document.getElementById('descriptionInput').value = '';
+
+          // Redirect to dashboard after success
+          setTimeout(() => {
+            window.location.href = '/website/dashboard';
+          }, 1000);
+        } else {
+          messageDiv.textContent = '❌ ' + (result.error || 'Erro ao fazer upload');
+          messageDiv.className = 'message error';
+        }
+      } catch (error) {
+        messageDiv.textContent = '❌ Erro ao conectar: ' + error.message;
+        messageDiv.className = 'message error';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enviar Upload 🚀';
+      }
+    }
+
+    // Add message styles
+    var style = document.createElement('style');
+    style.textContent = `
+      .message {
+        margin-top: 24px;
+        padding: 16px 20px;
+        border-radius: 14px;
+        font-weight: 600;
+        font-size: 0.95em;
+        animation: slideIn 0.4s ease;
+        border: 2px solid;
+      }
+      
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-15px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      .message.success {
+        background: rgba(99, 102, 241, 0.15);
+        border-color: #a78bfa;
+        color: #a78bfa;
+      }
+      
+      .message.error {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.6);
+        color: #fca5a5;
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
