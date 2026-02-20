@@ -15,6 +15,7 @@ type MediaService interface {
 	GetMediaByOwner(ownerID uint) ([]model.Media, error)
 	DeleteMedia(id uint) error
 	UpdateMedia(media *model.Media) error
+	GenerateThumbnailViaAPI(media *model.Media) (string, error)
 }
 
 type mediaService struct {
@@ -87,13 +88,13 @@ func (s *mediaService) UploadMedia(file *multipart.FileHeader, title, descriptio
 
 	switch fileType {
 	case utils.IMAGE:
-		if err := utils.GenerateImageThumbnail(fullPath, thumbPath, 200, 200); err != nil {
+		if err := utils.GenerateImageThumbnail(fullPath, thumbPath, 320, 320); err != nil {
 			// Log do erro mas não falha o upload se thumbnail falhar
 			fmt.Printf("Aviso: falha ao gerar thumbnail de imagem: %v\n", err)
 			thumbnailName = ""
 		}
 	case utils.VIDEO:
-		if err := utils.GenerateVideoThumbnail(fullPath, thumbPath, 200, 200); err != nil {
+		if err := utils.GenerateVideoThumbnail(fullPath, thumbPath, 320, 320); err != nil {
 			// Log do erro mas não falha o upload se thumbnail falhar
 			fmt.Printf("Aviso: falha ao gerar thumbnail de vídeo: %v\n", err)
 			thumbnailName = ""
@@ -157,4 +158,9 @@ func (s *mediaService) DeleteMedia(id uint) error {
 
 func (s *mediaService) UpdateMedia(media *model.Media) error {
 	return s.repo.Update(media)
+}
+
+// GenerateThumbnailViaAPI gera thumbnail através da API externa
+func (s *mediaService) GenerateThumbnailViaAPI(media *model.Media) (string, error) {
+	return utils.GenerateThumbnailViaExternalAPI(media.Type, utils.StringToFileType(media.Type), media.Filename)
 }

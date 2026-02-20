@@ -1,14 +1,19 @@
 package config
 
 import (
+	"path/filepath"
+
 	"gorm.io/driver/sqlite"
+
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
 
 func ConnectDB() {
-	dbPath := GetEnv("DB_PATH", "calculaPagamento.db")
+	basePath := GetEnv("BASE_PATH", ".")
+	dbName := GetEnv("DB_NAME", "wirelessGallery.db")
+	dbPath := filepath.Join(basePath, dbName)
 
 	database, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 	if err != nil {

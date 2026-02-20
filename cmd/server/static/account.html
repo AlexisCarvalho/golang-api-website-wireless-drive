@@ -580,6 +580,9 @@
   </div>
 
   <script>
+    // API Configuration
+    const API_URL = 'http://192.168.0.236:8085';
+
     // GSAP Animation on load
     window.addEventListener("DOMContentLoaded", function() {
       gsap.to(".container", {
@@ -672,7 +675,7 @@
       submitBtn.textContent = 'Entrando...';
 
       try {
-        const response = await fetch('/api/users/login', {
+        const response = await fetch(API_URL + '/api/users/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code, password })
@@ -721,7 +724,7 @@
       submitBtn.textContent = 'Criando...';
 
       try {
-        const response = await fetch('/api/users/register', {
+        const response = await fetch(API_URL + '/api/users/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, code, password })

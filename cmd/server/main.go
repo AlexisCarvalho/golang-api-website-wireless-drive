@@ -4,6 +4,7 @@ import (
 	"embed"
 	"io/fs"
 	"net/http"
+	"path/filepath"
 	"strconv"
 
 	"wireless_gallery/internal/config"
@@ -51,9 +52,11 @@ func main() {
 	// Static Files (JS, CSS, assets...)
 	r.StaticFS("/static", http.FS(subFS))
 
-	// Serve thumbnails from disk
+	// Serve thumbnails from disk - considera BASE_PATH
+	basePath := config.GetEnv("BASE_PATH", ".")
 	thumbsDir := config.GetEnv("THUMBS_DIR", "thumbs")
-	r.Static("/thumbs", thumbsDir)
+	thumbsPath := filepath.Join(basePath, thumbsDir)
+	r.Static("/thumbs", thumbsPath)
 
 	// =========================
 	// REPOSITORIES / SERVICES
@@ -123,5 +126,5 @@ func main() {
 	// =========================
 	// START SERVER
 	// =========================
-	r.Run(":8080")
+	r.Run(":8085")
 }

@@ -1,9 +1,14 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"mime/multipart"
+	"net/http"
+	"os"
 	"os/exec"
-	"path/filepath"
 )
 
 // GenerateImageThumbnail gera thumbnail para imagens usando FFmpeg
@@ -120,9 +125,78 @@ func IsFFprobeInstalled() bool {
 	return cmd.Run() == nil
 }
 
-// GenerateThumbnailName gera um nome único para o thumbnail
-func GenerateThumbnailName(originalFilename string) string {
-	ext := filepath.Ext(originalFilename)
-	nameWithoutExt := originalFilename[:len(originalFilename)-len(ext)]
-	return nameWithoutExt + "_thumb.jpg"
+// GenerateThumbnailViaExternalAPI gera thumbnail através da API externa
+func GenerateThumbnailViaExternalAPI(mediaType string, fileType FileType, filename string) (string, error) {
+	apiURL := os.Getenv("THUMBNAIL_API_URL")
+	if apiURL == "" {
+		apiURL = "http://192.168.0.139:8086"
+	}
+
+	// Abre o arquivo de mídia
+	filePath := GetFullMediaPath(fileType, filename)
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", fmt.Errorf("erro ao abrir arquivo: %w", err)
+	}
+	defer file.Close()
+
+	// Determina o endpoint baseado no tipo
+	endpoint := "/thumbnail/image"
+	if mediaType == "video" {
+		endpoint = "/thumbnail/video"
+	}
+
+	// Cria um buffer para o arquivo
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	// Adiciona o arquivo ao formulário
+	part, err := writer.CreateFormFile("file", filename)
+	if err != nil {
+		return "", fmt.Errorf("erro ao criar form file: %w", err)
+	}
+
+	if _, err := io.Copy(part, file); err != nil {
+		return "", fmt.Errorf("erro ao copiar arquivo: %w", err)
+	}
+
+	// Adiciona parâmetros opcionais
+	writer.WriteField("width", "320")
+	writer.WriteField("height", "320")
+	if mediaType == "video" {
+		writer.WriteField("second", "1")
+	}
+
+	writer.Close()
+
+	// Faz requisição POST
+	resp, err := http.Post(apiURL+endpoint, writer.FormDataContentType(), body)
+	if err != nil {
+		return "", fmt.Errorf("erro ao conectar com API de thumbnail: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("API retornou status %d", resp.StatusCode)
+	}
+
+	// Lê a resposta (thumbnail em bytes)
+	thumbData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("erro ao ler resposta: %w", err)
+	}
+
+	// Salva o thumbnail
+	if err := EnsureThumbsDir(); err != nil {
+		return "", fmt.Errorf("erro ao criar diretório de thumbnails: %w", err)
+	}
+
+	thumbName := GenerateThumbnailName(filename)
+	thumbPath := GetFullThumbPath(thumbName)
+
+	if err := ioutil.WriteFile(thumbPath, thumbData, 0644); err != nil {
+		return "", fmt.Errorf("erro ao salvar thumbnail: %w", err)
+	}
+
+	return thumbName, nil
 }

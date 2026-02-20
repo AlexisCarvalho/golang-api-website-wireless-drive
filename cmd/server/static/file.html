@@ -514,6 +514,9 @@
   </main>
 
   <script>
+    // API Configuration
+    const API_URL = 'http://192.168.0.236:8085';
+
     // GSAP Animations
     window.addEventListener("DOMContentLoaded", function() {
       // Stagger header elements
@@ -584,13 +587,14 @@
     // Helper para fazer requisições autenticadas
     async function authFetch(url, opts = {}) {
       const token = localStorage.getItem('authToken');
+      const fullUrl = url.startsWith('http') ? url : API_URL + url;
 
       opts.headers = {
         ...(opts.headers || {}),
         ...(token ? { Authorization: 'Bearer ' + token } : {})
       };
 
-      return fetch(url, opts);
+      return fetch(fullUrl, opts);
     }
 
     // Extract media ID from URL

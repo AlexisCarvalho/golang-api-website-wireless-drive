@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"wireless_gallery/internal/config"
@@ -90,4 +91,11 @@ func GetThumbsPath() string {
 // GetFullThumbPath retorna o caminho completo do arquivo de thumbnail
 func GetFullThumbPath(filename string) string {
 	return filepath.Join(GetThumbsPath(), filename)
+}
+
+// GenerateThumbnailName gera um nome único para o thumbnail baseado no nome do arquivo
+func GenerateThumbnailName(filename string) string {
+	ext := filepath.Ext(filename)
+	nameWithoutExt := filename[:len(filename)-len(ext)]
+	return fmt.Sprintf("thumb_%s.jpg", nameWithoutExt)
 }

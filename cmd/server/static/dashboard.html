@@ -304,6 +304,7 @@
       height: 100%;
       width: 100%;
       object-fit: cover;
+      object-position: center;
       transform: none;
       filter: none;
       display: block;
@@ -683,6 +684,9 @@
       <button id="toggleView">
         <span id="viewIcon">☰</span> Alternar Visualização
       </button>
+      <button id="generateThumbnailsBtn">
+        <span>🖼️</span> Gerar Thumbnails
+      </button>
     </section>
 
     <section id="gallery" class="grid"></section>
@@ -690,16 +694,20 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script>
+    // API Configuration
+    const API_URL = 'http://192.168.0.236:8085';
+
     // Helper para fazer requisições autenticadas
     async function authFetch(url, opts = {}) {
       const token = localStorage.getItem('authToken');
+      const fullUrl = url.startsWith('http') ? url : API_URL + url;
 
       opts.headers = {
         ...(opts.headers || {}),
         ...(token ? { Authorization: 'Bearer ' + token } : {})
       };
 
-      return fetch(url, opts);
+      return fetch(fullUrl, opts);
     }
 
     // Get current user from token (decode JWT)
@@ -744,6 +752,10 @@
         .then(function(data) {
           if (data.medias && data.medias.length > 0) {
             gallery.innerHTML = '';
+            // Ordenar mídias por data de criação (mais recentes primeiro)
+            data.medias.sort(function(a, b) {
+              return new Date(b.CreatedAt) - new Date(a.CreatedAt);
+            });
             data.medias.forEach(function(media) {
               // Construir URL do arquivo baseado no tipo
               var fileUrl = '/api/media/' + media.ID + '/file';
@@ -1167,7 +1179,92 @@
           });
         });
       }
+
+      // Gerar Thumbnails handler
+      var generateThumbnailsBtn = document.getElementById('generateThumbnailsBtn');
+      if (generateThumbnailsBtn) {
+        generateThumbnailsBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          generateMissingThumbnails();
+        });
+
+        // Button hover effect
+        generateThumbnailsBtn.addEventListener('mouseenter', function() {
+          gsap.to(this, {
+            scale: 1.02,
+            duration: 0.3,
+            ease: 'power2.out'
+          });
+        });
+
+        generateThumbnailsBtn.addEventListener('mouseleave', function() {
+          gsap.to(this, {
+            scale: 1,
+            duration: 0.3,
+            ease: 'power2.out'
+          });
+        });
+      }
     })();
+
+    // Função para gerar thumbnails faltantes
+    function generateMissingThumbnails() {
+      const userID = currentUserID;
+      if (!userID) {
+        alert('Erro: usuário não identificado');
+        return;
+      }
+
+      const btn = document.getElementById('generateThumbnailsBtn');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳</span> Gerando...';
+
+      // Busca mídias sem thumbnail
+      authFetch('/api/media/owner/' + userID + '/missing-thumbnails')
+        .then(function(resp) { return resp.json(); })
+        .then(function(data) {
+          if (data.count === 0) {
+            alert('Todas as mídias já possuem thumbnails!');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            return;
+          }
+
+          console.log('Encontradas ' + data.count + ' mídias sem thumbnail');
+
+          // Gera thumbnails para cada mídia
+          var promises = data.medias.map(function(media) {
+            return authFetch('/api/media/' + media.ID + '/generate-thumbnail', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            })
+            .then(function(resp) { return resp.json(); })
+            .catch(function(err) {
+              console.error('Erro ao gerar thumbnail para ' + media.Title + ':', err);
+              return null;
+            });
+          });
+
+          // Aguarda todos os thumbnails serem gerados
+          Promise.all(promises).then(function(results) {
+            var sucessos = results.filter(function(r) { return r !== null; }).length;
+            //alert('Thumbnails gerados com sucesso! ' + sucessos + ' de ' + data.count + ' completados.');
+            
+            // Recarrega as mídias
+            loadMedias();
+            
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+          });
+        })
+        .catch(function(err) {
+          console.error('Erro ao buscar mídias sem thumbnail:', err);
+          alert('Erro ao buscar mídias sem thumbnail');
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+        });
+    }
   </script>
 </body>
 </html>
