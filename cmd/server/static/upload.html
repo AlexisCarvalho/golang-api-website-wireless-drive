@@ -629,11 +629,16 @@
     // Preview do arquivo
     var fileInput = document.getElementById('fileInput');
     var filePreview = document.getElementById('filePreview');
+    var titleInput = document.getElementById('titleInput');
 
     fileInput.addEventListener('change', function(e) {
       var file = e.target.files[0];
       if (file) {
         filePreview.classList.add('active');
+        
+        // Auto-preencher título com o nome do arquivo (sem extensão)
+        var fileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+        titleInput.value = fileName;
         
         var reader = new FileReader();
         reader.onload = function(e) {

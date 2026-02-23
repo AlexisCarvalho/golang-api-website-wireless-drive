@@ -433,6 +433,12 @@
       margin-bottom: 8px;
       line-height: 1.3;
       text-decoration: none;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      line-clamp: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     #gallery.grid .card .meta .muted {
@@ -727,11 +733,9 @@
         }).join(''));
         
         const payload = JSON.parse(jsonPayload);
-        console.log('JWT Payload:', payload);
         
         // Try different field names
         const userID = payload.user_id || payload.UserID || payload.id || payload.sub;
-        console.log('Extracted user_id:', userID);
         return userID;
       } catch (e) {
         console.error('Erro ao decodificar JWT:', e);
@@ -825,25 +829,19 @@
 
     function initializeDashboard() {
       const token = localStorage.getItem('authToken');
-      console.log('Token encontrado:', !!token);
-      console.log('Token value:', token ? token.substring(0, 20) + '...' : 'null');
       
       if (!token) {
-        console.log('Redirecionando para login - sem token');
         window.location.href = '/website/account';
         return;
       }
 
       currentUserID = getCurrentUserID(token);
-      console.log('Current User ID:', currentUserID);
       
       if (!currentUserID) {
-        console.log('Redirecionando para login - sem userID');
         window.location.href = '/website/account';
         return;
       }
 
-      console.log('Carregando mídias para usuário:', currentUserID);
       loadMedias();
     }
 
@@ -1222,7 +1220,12 @@
 
       // Busca mídias sem thumbnail
       authFetch('/api/media/owner/' + userID + '/missing-thumbnails')
-        .then(function(resp) { return resp.json(); })
+        .then(function(resp) { 
+          if (!resp.ok) {
+            throw new Error('Erro na resposta do servidor: ' + resp.status);
+          }
+          return resp.json(); 
+        })
         .then(function(data) {
           if (data.count === 0) {
             alert('Todas as mídias já possuem thumbnails!');
@@ -1231,7 +1234,6 @@
             return;
           }
 
-          console.log('Encontradas ' + data.count + ' mídias sem thumbnail');
 
           // Gera thumbnails para cada mídia
           var promises = data.medias.map(function(media) {
@@ -1239,28 +1241,33 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/json' }
             })
-            .then(function(resp) { return resp.json(); })
+            .then(function(resp) { 
+              if (!resp.ok) {
+                throw new Error('Erro ao gerar thumbnail');
+              }
+              return resp.json(); 
+            })
             .catch(function(err) {
               console.error('Erro ao gerar thumbnail para ' + media.Title + ':', err);
+              alert('Erro ao gerar thumbnail para ' + media.Title)
               return null;
             });
           });
 
           // Aguarda todos os thumbnails serem gerados
           Promise.all(promises).then(function(results) {
-            var sucessos = results.filter(function(r) { return r !== null; }).length;
-            //alert('Thumbnails gerados com sucesso! ' + sucessos + ' de ' + data.count + ' completados.');
-            
             // Recarrega as mídias
-            loadMedias();
+            if(promises != null) {
+              loadMedias();
+            }
             
             btn.disabled = false;
             btn.innerHTML = originalText;
           });
         })
         .catch(function(err) {
-          console.error('Erro ao buscar mídias sem thumbnail:', err);
-          alert('Erro ao buscar mídias sem thumbnail');
+          console.error('Erro ao gerar thumbnails:', err);
+          alert('Impossível gerar thumbnails, servidor indisponível ou erro inesperado');
           btn.disabled = false;
           btn.innerHTML = originalText;
         });
