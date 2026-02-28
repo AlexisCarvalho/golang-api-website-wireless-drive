@@ -12,6 +12,7 @@ type FileType string
 const (
 	IMAGE  FileType = "image"
 	VIDEO  FileType = "video"
+	AUDIO  FileType = "audio"
 	OTHERS FileType = "others"
 )
 
@@ -22,6 +23,8 @@ func StringToFileType(t string) FileType {
 		return IMAGE
 	case "video":
 		return VIDEO
+	case "audio":
+		return AUDIO
 	default:
 		return OTHERS
 	}
@@ -54,6 +57,8 @@ func DetermineFileType(mimeType string) FileType {
 		return IMAGE
 	case len(mimeType) >= 6 && mimeType[:6] == "video/":
 		return VIDEO
+	case len(mimeType) >= 6 && mimeType[:6] == "audio/":
+		return AUDIO
 	default:
 		return OTHERS
 	}

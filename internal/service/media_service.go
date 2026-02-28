@@ -78,26 +78,29 @@ func (s *mediaService) UploadMedia(file *multipart.FileHeader, title, descriptio
 		return nil, fmt.Errorf("erro ao copiar arquivo: %w", err)
 	}
 
-	// Cria thumbnail
-	thumbnailName := utils.GenerateThumbnailName(filename)
-	if err := utils.EnsureThumbsDir(); err != nil {
-		return nil, fmt.Errorf("erro ao criar diretório de thumbnails: %w", err)
-	}
-
-	thumbPath := utils.GetFullThumbPath(thumbnailName)
-
-	switch fileType {
-	case utils.IMAGE:
-		if err := utils.GenerateImageThumbnail(fullPath, thumbPath, 320, 320); err != nil {
-			// Log do erro mas não falha o upload se thumbnail falhar
-			fmt.Printf("Aviso: falha ao gerar thumbnail de imagem: %v\n", err)
-			thumbnailName = ""
+	// Cria thumbnail (apenas para imagens e vídeos)
+	thumbnailName := ""
+	if fileType == utils.IMAGE || fileType == utils.VIDEO {
+		thumbnailName = utils.GenerateThumbnailName(filename)
+		if err := utils.EnsureThumbsDir(); err != nil {
+			return nil, fmt.Errorf("erro ao criar diretório de thumbnails: %w", err)
 		}
-	case utils.VIDEO:
-		if err := utils.GenerateVideoThumbnail(fullPath, thumbPath, 320, 320); err != nil {
-			// Log do erro mas não falha o upload se thumbnail falhar
-			fmt.Printf("Aviso: falha ao gerar thumbnail de vídeo: %v\n", err)
-			thumbnailName = ""
+
+		thumbPath := utils.GetFullThumbPath(thumbnailName)
+
+		switch fileType {
+		case utils.IMAGE:
+			if err := utils.GenerateImageThumbnail(fullPath, thumbPath, 320, 320); err != nil {
+				// Log do erro mas não falha o upload se thumbnail falhar
+				fmt.Printf("Aviso: falha ao gerar thumbnail de imagem: %v\n", err)
+				thumbnailName = ""
+			}
+		case utils.VIDEO:
+			if err := utils.GenerateVideoThumbnail(fullPath, thumbPath, 320, 320); err != nil {
+				// Log do erro mas não falha o upload se thumbnail falhar
+				fmt.Printf("Aviso: falha ao gerar thumbnail de vídeo: %v\n", err)
+				thumbnailName = ""
+			}
 		}
 	}
 
@@ -115,7 +118,7 @@ func (s *mediaService) UploadMedia(file *multipart.FileHeader, title, descriptio
 	if err := s.repo.Create(media); err != nil {
 		os.Remove(fullPath)
 		if thumbnailName != "" {
-			os.Remove(thumbPath)
+			os.Remove(utils.GetFullThumbPath(thumbnailName))
 		}
 		return nil, fmt.Errorf("erro ao salvar mídia no banco de dados: %w", err)
 	}

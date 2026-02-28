@@ -690,6 +690,9 @@
       <button id="toggleView">
         <span id="viewIcon">☰</span> Alternar Visualização
       </button>
+      <button id="toggleSortBtn">
+        <span id="sortIcon">📅</span> Data
+      </button>
       <button id="generateThumbnailsBtn">
         <span>🖼️</span> Gerar Thumbnails
       </button>
@@ -701,7 +704,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script>
     // API Configuration
-    const API_URL = 'http://192.168.0.236:8085';
+    const API_URL = 'http://192.168.0.139:8085';
 
     // Helper para fazer requisições autenticadas
     async function authFetch(url, opts = {}) {
@@ -743,6 +746,91 @@
       }
     }
 
+    // Sort mode state
+    var sortMode = 'date'; // 'date', 'asc', 'desc'
+    var allMedias = []; // Store all medias for sorting without API calls
+
+    // Function to sort medias based on current sort mode
+    function sortMedias(medias) {
+      var copy = medias.slice(); // Create a copy to avoid mutating original
+      switch(sortMode) {
+        case 'asc':
+          return copy.sort(function(a, b) {
+            return a.Title.localeCompare(b.Title);
+          });
+        case 'desc':
+          return copy.sort(function(a, b) {
+            return b.Title.localeCompare(a.Title);
+          });
+        case 'date':
+        default:
+          return copy.sort(function(a, b) {
+            return new Date(b.CreatedAt) - new Date(a.CreatedAt);
+          });
+      }
+    }
+
+    // Render medias to gallery from sorted array
+    function renderMedias(medias) {
+      gallery.innerHTML = '';
+      medias.forEach(function(media) {
+        // Construir URL do arquivo baseado no tipo
+        var fileUrl = '/api/media/' + media.ID + '/file';
+        var thumbUrl = media.Thumbnail ? '/thumbs/' + media.Thumbnail : '';
+
+        var card = document.createElement('a');
+        card.className = 'card';
+        card.href = '/website/media/' + media.ID;
+        card.setAttribute('data-type', media.Type);
+        card.setAttribute('data-src', fileUrl);
+        card.setAttribute('data-mime', media.MimeType);
+
+        var thumb = document.createElement('div');
+        thumb.className = 'thumb';
+
+        if (thumbUrl && (media.Type === 'image' || media.Type === 'video')) {
+          var img = document.createElement('img');
+          img.src = thumbUrl;
+          img.alt = media.Title;
+          thumb.appendChild(img);
+        } else if (media.Type === 'audio') {
+          thumb.innerHTML = '<div class="no-thumb">🎵</div>';
+        } else if (media.Type === 'others' || media.Type === 'other') {
+          thumb.innerHTML = '<div class="no-thumb">📄</div>';
+        } else if (media.Type === 'image') {
+          thumb.innerHTML = '<div class="no-thumb">🖼️</div>';
+        } else if (media.Type === 'video') {
+          thumb.innerHTML = '<div class="no-thumb">🎬</div>';
+        } else {
+          thumb.innerHTML = '<div class="no-thumb">📄</div>';
+        }
+
+        var meta = document.createElement('div');
+        meta.className = 'meta';
+
+        var h3 = document.createElement('h3');
+        h3.textContent = media.Title;
+        h3.style.textDecoration = 'none';
+
+        var p = document.createElement('p');
+        p.className = 'muted';
+        p.textContent = media.CreatedAt;
+
+        meta.appendChild(h3);
+        meta.appendChild(p);
+
+        card.appendChild(thumb);
+        card.appendChild(meta);
+        gallery.appendChild(card);
+      });
+
+      setTimeout(function() {
+        if (window.formatDatesGlobal) window.formatDatesGlobal();
+        if (window.updateParallaxGlobal) window.updateParallaxGlobal();
+        if (window.animateCardsGlobal) window.animateCardsGlobal();
+      }, 50);
+    }
+
     // Load medias from API
     function loadMedias() {
       const userID = currentUserID;
@@ -755,65 +843,11 @@
         .then(function(resp) { return resp.json(); })
         .then(function(data) {
           if (data.medias && data.medias.length > 0) {
-            gallery.innerHTML = '';
-            // Ordenar mídias por data de criação (mais recentes primeiro)
-            data.medias.sort(function(a, b) {
-              return new Date(b.CreatedAt) - new Date(a.CreatedAt);
-            });
-            data.medias.forEach(function(media) {
-              // Construir URL do arquivo baseado no tipo
-              var fileUrl = '/api/media/' + media.ID + '/file';
-              var thumbUrl = media.Thumbnail ? '/thumbs/' + media.Thumbnail : '';
-
-              var card = document.createElement('a');
-              card.className = 'card';
-              card.href = '/website/media/' + media.ID;
-              card.setAttribute('data-type', media.Type);
-              card.setAttribute('data-src', fileUrl);
-              card.setAttribute('data-mime', media.MimeType);
-
-              var thumb = document.createElement('div');
-              thumb.className = 'thumb';
-
-              if (thumbUrl && (media.Type === 'image' || media.Type === 'video')) {
-                var img = document.createElement('img');
-                img.src = thumbUrl;
-                img.alt = media.Title;
-                thumb.appendChild(img);
-              } else if (media.Type === 'others' || media.Type === 'other') {
-                thumb.innerHTML = '<div class="no-thumb">📄</div>';
-              } else if (media.Type === 'image') {
-                thumb.innerHTML = '<div class="no-thumb">🖼️</div>';
-              } else if (media.Type === 'video') {
-                thumb.innerHTML = '<div class="no-thumb">🎬</div>';
-              } else {
-                thumb.innerHTML = '<div class="no-thumb">📷</div>';
-              }
-
-              var meta = document.createElement('div');
-              meta.className = 'meta';
-
-              var h3 = document.createElement('h3');
-              h3.textContent = media.Title;
-              h3.style.textDecoration = 'none';
-
-              var p = document.createElement('p');
-              p.className = 'muted';
-              p.textContent = media.CreatedAt;
-
-              meta.appendChild(h3);
-              meta.appendChild(p);
-
-              card.appendChild(thumb);
-              card.appendChild(meta);
-              gallery.appendChild(card);
-            });
-
-            setTimeout(function() {
-              if (window.formatDatesGlobal) window.formatDatesGlobal();
-              if (window.updateParallaxGlobal) window.updateParallaxGlobal();
-              if (window.animateCardsGlobal) window.animateCardsGlobal();
-            }, 50);
+            // Store all medias
+            allMedias = data.medias;
+            // Sort and render
+            var sorted = sortMedias(allMedias);
+            renderMedias(sorted);
           } else {
             gallery.innerHTML = '<p>Sem mídias ainda. Faça um <a href="/website/upload">upload</a>.</p>';
           }
@@ -1196,6 +1230,73 @@
         });
 
         generateThumbnailsBtn.addEventListener('mouseleave', function() {
+          gsap.to(this, {
+            scale: 1,
+            duration: 0.3,
+            ease: 'power2.out'
+          });
+        });
+      }
+
+      // Sort mode handler
+      var sortBtn = document.getElementById('toggleSortBtn');
+      if (sortBtn) {
+        function updateSortButtonText() {
+          var icon = '📅';
+          var label = 'Data';
+          
+          switch(sortMode) {
+            case 'asc':
+              icon = '🔤';
+              label = 'A→Z';
+              break;
+            case 'desc':
+              icon = '🔡';
+              label = 'Z→A';
+              break;
+            case 'date':
+            default:
+              icon = '📅';
+              label = 'Data';
+          }
+          
+          sortBtn.innerHTML = '<span id="sortIcon">' + icon + '</span> ' + label;
+        }
+
+        sortBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          // Cycle through sort modes: date -> asc -> desc -> date
+          switch(sortMode) {
+            case 'date':
+              sortMode = 'asc';
+              break;
+            case 'asc':
+              sortMode = 'desc';
+              break;
+            case 'desc':
+              sortMode = 'date';
+              break;
+          }
+          
+          updateSortButtonText();
+          // Reorder without API call
+          if (allMedias.length > 0) {
+            var sorted = sortMedias(allMedias);
+            renderMedias(sorted);
+          }
+        });
+
+        // Button hover effect
+        sortBtn.addEventListener('mouseenter', function() {
+          gsap.to(this, {
+            scale: 1.02,
+            duration: 0.3,
+            ease: 'power2.out'
+          });
+        });
+
+        sortBtn.addEventListener('mouseleave', function() {
           gsap.to(this, {
             scale: 1,
             duration: 0.3,

@@ -111,6 +111,8 @@ func main() {
 		// Serve appropriate template based on media type
 		if media.Type == "video" {
 			c.FileFromFS("video.html", http.FS(subFS))
+		} else if media.Type == "audio" {
+			c.FileFromFS("audio.html", http.FS(subFS))
 		} else if media.Type == "image" {
 			c.FileFromFS("image.html", http.FS(subFS))
 		} else {
