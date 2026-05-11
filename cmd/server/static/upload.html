@@ -385,6 +385,202 @@
       box-shadow: 0 4px 12px rgba(167, 139, 250, 0.4);
     }
 
+    /* Drop Zone */
+    .drop-zone {
+      position: relative;
+      margin-top: 8px;
+      margin-bottom: 24px;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.05), rgba(192, 132, 252, 0.05));
+      border: 3px dashed var(--border);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: var(--accent);
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), rgba(192, 132, 252, 0.1));
+      box-shadow: 0 0 20px rgba(167, 139, 250, 0.2);
+    }
+
+    .drop-zone-content {
+      pointer-events: none;
+    }
+
+    .drop-icon {
+      font-size: 3.5rem;
+      margin-bottom: 12px;
+      animation: iconBounce 2s ease-in-out infinite;
+    }
+
+    @keyframes iconBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .drop-text {
+      font-size: 1.2rem;
+      color: var(--text-primary);
+      font-weight: 600;
+      margin: 12px 0;
+    }
+
+    .drop-subtext {
+      color: var(--text-secondary);
+      margin: 8px 0;
+    }
+
+    .select-files-btn {
+      display: inline-block;
+      padding: 10px 24px;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all 0.3s ease;
+      pointer-events: auto;
+    }
+
+    .select-files-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(167, 139, 250, 0.4);
+    }
+
+    /* Files List */
+    .files-container {
+      margin-bottom: 24px;
+      padding: 20px;
+      background: rgba(167, 139, 250, 0.05);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      animation: fadeInUp 0.4s ease;
+    }
+
+    .files-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      background: rgba(28, 24, 37, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      animation: slideIn 0.3s ease;
+    }
+
+    .file-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .file-icon {
+      font-size: 1.8rem;
+      min-width: 40px;
+    }
+
+    .file-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .file-name {
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 0.95rem;
+      word-break: break-word;
+    }
+
+    .file-size {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+
+    .remove-file {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .remove-file:hover {
+      background: rgba(239, 68, 68, 0.4);
+      border-color: rgba(239, 68, 68, 0.6);
+    }
+
+    /* Progress Items */
+    .progress-items {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .progress-item {
+      padding: 16px;
+      background: rgba(28, 24, 37, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      animation: slideIn 0.3s ease;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(167, 139, 250, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.3s ease;
+      box-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
+    }
+
+    .progress-status {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .progress-status.success {
+      color: #a78bfa;
+    }
+
+    .progress-status.error {
+      color: #fca5a5;
+    }
+
     /* Submit Button */
     .upload-form button[type="submit"] {
       width: 100%;
@@ -558,36 +754,44 @@
   <main class="container">
     <form class="upload-form" id="uploadForm" onsubmit="handleUpload(event)">
       <h2>Fazer Upload</h2>
-      <p class="subtitle">Adicione suas fotos e vídeos à galeria</p>
+      <p class="subtitle">Arraste arquivos aqui ou selecione para fazer upload (múltiplos arquivos suportados)</p>
 
-      <label>
-        Título
-        <input type="text" id="titleInput" name="title" placeholder="Digite um título para sua mídia" required>
-      </label>
+      <!-- Drop Zone -->
+      <div id="dropZone" class="drop-zone">
+        <div class="drop-zone-content">
+          <div class="drop-icon">📁</div>
+          <p class="drop-text">Arraste seus arquivos aqui</p>
+          <p class="drop-subtext">ou</p>
+          <label for="fileInput" class="select-files-btn">Selecione arquivos</label>
+        </div>
+      </div>
 
-      <label>
-        Descrição
-        <textarea id="descriptionInput" name="description" placeholder="Adicione uma descrição (opcional)"></textarea>
-      </label>
+      <input type="file" name="files" id="fileInput" accept="image/*,video/*,audio/*,application/pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip" multiple hidden>
 
-      <label>
-        Arquivo
-        <input type="file" name="file" id="fileInput" accept="image/*,video/*,audio/*,application/pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip" required>
-      </label>
+      <!-- Files List -->
+      <div id="filesContainer" class="files-container" style="display: none;">
+        <h3 style="color: var(--text-primary); margin-bottom: 16px;">Arquivos selecionados</h3>
+        <div id="filesList" class="files-list"></div>
+      </div>
 
-      <div id="filePreview" class="file-preview"></div>
-
-      <button type="submit" id="submitBtn">Enviar Upload</button>
+      <button type="submit" id="submitBtn" style="display: none;">Enviar Uploads 🚀</button>
       <div id="uploadMessage"></div>
+
+      <!-- Upload Progress -->
+      <div id="uploadProgress" style="display: none;">
+        <div id="progressItems" class="progress-items"></div>
+      </div>
     </form>
 
     <div class="tips">
       <h3>Dicas</h3>
       <ul>
         <li>Formatos suportados: JPG, PNG, GIF, MP4, WebM, PDF, DOC, DOCX, PPT, XLS, TXT, ZIP</li>
-        <li>Tamanho máximo recomendado: 50MB (arquivos grandes podem falhar no upload)</li>
-        <li>Use títulos descritivos para facilitar a busca</li>
+        <li>Tamanho máximo recomendado: 50MB por arquivo</li>
+        <li>Os títulos serão preenchidos automaticamente com o nome do arquivo</li>
+        <li>Descrições são opcionais</li>
         <li>Vídeos serão processados automaticamente</li>
+        <li>Você pode fazer upload de múltiplos arquivos simultaneamente</li>
       </ul>
     </div>
   </main>
@@ -595,7 +799,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script>
     // API Configuration
-    const API_URL = 'http://192.168.0.139:8085';
+    const API_URL = 'http://192.168.0.236:8085';
+
+    // State
+    let selectedFiles = [];
 
     // Animações GSAP
     window.addEventListener("DOMContentLoaded", function() {
@@ -624,45 +831,131 @@
         delay: 0.8,
         ease: 'power3.out'
       });
+
+      // Setup drag and drop
+      setupDragAndDrop();
     });
 
-    // Preview do arquivo
-    var fileInput = document.getElementById('fileInput');
-    var filePreview = document.getElementById('filePreview');
-    var titleInput = document.getElementById('titleInput');
+    // Drag and Drop Setup
+    function setupDragAndDrop() {
+      const dropZone = document.getElementById('dropZone');
+      const fileInput = document.getElementById('fileInput');
 
-    fileInput.addEventListener('change', function(e) {
-      var file = e.target.files[0];
-      if (file) {
-        filePreview.classList.add('active');
-        
-        // Auto-preencher título com o nome do arquivo (sem extensão)
-        var fileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-        titleInput.value = fileName;
-        
-        var reader = new FileReader();
-        reader.onload = function(e) {
-          var fileType = file.type.split('/')[0];
-          var previewHTML = '';
-          
-          if (fileType === 'image') {
-            previewHTML = '<img src="' + e.target.result + '" alt="Preview">';
-          } else if (fileType === 'video') {
-            previewHTML = '<video src="' + e.target.result + '" controls></video>';
-          } else if (fileType === 'audio') {
-            previewHTML = '<div class="file-icon">🎵</div>';
-          } else {
-            previewHTML = '<div class="file-icon">📄</div>';
-          }
-          
-          previewHTML += '<p><strong>' + file.name + '</strong> (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)</p>';
-          filePreview.innerHTML = previewHTML;
-        };
-        reader.readAsDataURL(file);
-      } else {
-        filePreview.classList.remove('active');
+      // Prevent default drag behaviors
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+      });
+
+      // Highlight drop zone when item is dragged over it
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+      });
+
+      // Handle dropped files
+      dropZone.addEventListener('drop', handleDrop, false);
+
+      // Handle file input change
+      fileInput.addEventListener('change', handleFileInputChange);
+
+      // Click on drop zone to open file picker
+      dropZone.addEventListener('click', function() {
+        fileInput.click();
+      });
+    }
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function highlight(e) {
+      document.getElementById('dropZone').classList.add('dragover');
+    }
+
+    function unhighlight(e) {
+      document.getElementById('dropZone').classList.remove('dragover');
+    }
+
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      handleFiles(files);
+    }
+
+    function handleFileInputChange(e) {
+      const files = e.target.files;
+      handleFiles(files);
+    }
+
+    function handleFiles(files) {
+      selectedFiles = Array.from(files);
+      renderFilesList();
+    }
+
+    function getFileIcon(fileName) {
+      const ext = fileName.split('.').pop().toLowerCase();
+      const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+      const videoExts = ['mp4', 'webm', 'avi', 'mov', 'mkv'];
+      const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'flac'];
+      const docExts = ['pdf', 'doc', 'docx', 'txt'];
+      const sheetExts = ['xls', 'xlsx', 'csv'];
+      const presentExts = ['ppt', 'pptx'];
+      const zipExts = ['zip', 'rar', '7z'];
+
+      if (imageExts.includes(ext)) return '🖼️';
+      if (videoExts.includes(ext)) return '🎥';
+      if (audioExts.includes(ext)) return '🎵';
+      if (docExts.includes(ext)) return '📄';
+      if (sheetExts.includes(ext)) return '📊';
+      if (presentExts.includes(ext)) return '📊';
+      if (zipExts.includes(ext)) return '📦';
+      return '📁';
+    }
+
+    function renderFilesList() {
+      const filesContainer = document.getElementById('filesContainer');
+      const filesList = document.getElementById('filesList');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (selectedFiles.length === 0) {
+        filesContainer.style.display = 'none';
+        submitBtn.style.display = 'none';
+        return;
       }
-    });
+
+      filesContainer.style.display = 'block';
+      submitBtn.style.display = 'block';
+
+      filesList.innerHTML = '';
+
+      selectedFiles.forEach((file, index) => {
+        const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        fileItem.innerHTML = `
+          <div class="file-item-left">
+            <div class="file-icon">${getFileIcon(file.name)}</div>
+            <div class="file-info">
+              <div class="file-name">${file.name}</div>
+              <div class="file-size">${fileSizeMB} MB</div>
+            </div>
+          </div>
+          <button type="button" class="remove-file" onclick="removeFile(${index})">Remover</button>
+        `;
+        filesList.appendChild(fileItem);
+      });
+    }
+
+    function removeFile(index) {
+      selectedFiles.splice(index, 1);
+      document.getElementById('fileInput').value = '';
+      renderFilesList();
+    }
 
     // Animação no hover do formulário
     var form = document.querySelector('.upload-form');
@@ -679,26 +972,6 @@
         scale: 1,
         duration: 0.3,
         ease: 'power2.out'
-      });
-    });
-
-    // Animação nos inputs em foco
-    var inputs = document.querySelectorAll('input, textarea');
-    inputs.forEach(function(input) {
-      input.addEventListener('focus', function() {
-        gsap.to(this, {
-          scale: 1.02,
-          duration: 0.2,
-          ease: 'power2.out'
-        });
-      });
-
-      input.addEventListener('blur', function() {
-        gsap.to(this, {
-          scale: 1,
-          duration: 0.2,
-          ease: 'power2.out'
-        });
       });
     });
 
@@ -745,50 +1018,117 @@
         return;
       }
 
-      const formData = new FormData();
-      formData.append('file', document.getElementById('fileInput').files[0]);
-      formData.append('title', document.getElementById('titleInput').value);
-      formData.append('description', document.getElementById('descriptionInput').value);
+      if (selectedFiles.length === 0) {
+        const messageDiv = document.getElementById('uploadMessage');
+        messageDiv.textContent = '❌ Selecione pelo menos um arquivo';
+        messageDiv.className = 'message error';
+        return;
+      }
 
       const submitBtn = document.getElementById('submitBtn');
       const messageDiv = document.getElementById('uploadMessage');
+      const uploadProgress = document.getElementById('uploadProgress');
+      const progressItems = document.getElementById('progressItems');
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Enviando...';
       messageDiv.textContent = '';
+      uploadProgress.style.display = 'block';
+      progressItems.innerHTML = '';
+
+      let uploadedCount = 0;
+      let failedCount = 0;
+
+      // Create progress items for each file
+      selectedFiles.forEach((file, index) => {
+        const progressItem = document.createElement('div');
+        progressItem.className = 'progress-item';
+        progressItem.id = 'progress-' + index;
+        progressItem.innerHTML = `
+          <div class="progress-header">
+            <span>${file.name}</span>
+            <span id="progress-percent-${index}">0%</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar-${index}"></div>
+          </div>
+          <div class="progress-status" id="progress-status-${index}">Enviando...</div>
+        `;
+        progressItems.appendChild(progressItem);
+      });
+
+      // Upload each file
+      const uploadPromises = selectedFiles.map((file, index) => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            uploadSingleFile(file, index).then((success) => {
+              if (success) uploadedCount++;
+              else failedCount++;
+              resolve();
+            });
+          }, index * 100); // Pequeno delay entre uploads para não sobrecarregar
+        });
+      });
+
+      await Promise.all(uploadPromises);
+
+      // Show final message
+      if (failedCount === 0) {
+        messageDiv.innerHTML = `✅ Todos os ${uploadedCount} arquivo(s) foram enviados com sucesso!`;
+        messageDiv.className = 'message success';
+        
+        // Reset and redirect
+        setTimeout(() => {
+          window.location.href = '/website/dashboard';
+        }, 1500);
+      } else if (uploadedCount > 0) {
+        messageDiv.innerHTML = `⚠️ ${uploadedCount} arquivo(s) enviado(s) com sucesso, mas ${failedCount} falharam.`;
+        messageDiv.className = 'message error';
+      } else {
+        messageDiv.innerHTML = `❌ Falha ao enviar ${failedCount} arquivo(s).`;
+        messageDiv.className = 'message error';
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar Uploads 🚀';
+    }
+
+    async function uploadSingleFile(file, index) {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      // Auto-fill title with filename (without extension)
+      const fileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+      formData.append('title', fileName);
+      formData.append('description', ''); // Empty description for batch uploads
 
       try {
-        const response = await authFetch('/api/media/upload', {
+        const response = await fetch(API_URL + '/api/media/upload', {
           method: 'POST',
-          body: formData
+          body: formData,
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+          }
         });
 
         const result = await response.json();
 
         if (response.ok) {
-          messageDiv.textContent = '✅ Upload realizado com sucesso!';
-          messageDiv.className = 'message success';
-          
-          // Reset form
-          document.getElementById('uploadForm').reset();
-          document.getElementById('filePreview').classList.remove('active');
-          document.getElementById('titleInput').value = '';
-          document.getElementById('descriptionInput').value = '';
-
-          // Redirect to dashboard after success
-          setTimeout(() => {
-            window.location.href = '/website/dashboard';
-          }, 1000);
+          document.getElementById('progress-status-' + index).textContent = '✅ Enviado com sucesso';
+          document.getElementById('progress-status-' + index).className = 'progress-status success';
+          document.getElementById('progress-bar-' + index).style.width = '100%';
+          document.getElementById('progress-percent-' + index).textContent = '100%';
+          return true;
         } else {
-          messageDiv.textContent = '❌ ' + (result.error || 'Erro ao fazer upload');
-          messageDiv.className = 'message error';
+          const errorMsg = result.error || 'Erro desconhecido';
+          document.getElementById('progress-status-' + index).textContent = '❌ Erro: ' + errorMsg;
+          document.getElementById('progress-status-' + index).className = 'progress-status error';
+          return false;
         }
       } catch (error) {
-        messageDiv.textContent = '❌ Erro ao conectar: ' + error.message;
-        messageDiv.className = 'message error';
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Enviar Upload 🚀';
+        document.getElementById('progress-status-' + index).textContent = '❌ Erro: ' + error.message;
+        document.getElementById('progress-status-' + index).className = 'progress-status error';
+        return false;
       }
     }
 

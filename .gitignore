@@ -11,6 +11,7 @@ ztemp/
 /thumbs
 TODO.md
 wireless_gallery.db
+server
 
 # Output folders
 bin/
