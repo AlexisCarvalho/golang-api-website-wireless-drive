@@ -510,49 +510,7 @@
       box-shadow: 0 12px 40px rgba(139, 92, 246, 0.6);
     }
 
-    /* Decorative floating orbs */
-    .orb {
-      position: fixed;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 0;
-      filter: blur(80px);
-      opacity: 0.4;
-      animation: float 20s ease-in-out infinite;
-    }
 
-    .orb-1 {
-      top: 10%;
-      left: 10%;
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(99, 102, 241, 0.3), transparent 70%);
-      animation-delay: 0s;
-    }
-
-    .orb-2 {
-      bottom: 15%;
-      right: 10%;
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, rgba(139, 92, 246, 0.3), transparent 70%);
-      animation-delay: -10s;
-    }
-
-    .orb-3 {
-      top: 50%;
-      left: 50%;
-      width: 300px;
-      height: 300px;
-      background: radial-gradient(circle, rgba(167, 139, 250, 0.2), transparent 70%);
-      animation-delay: -5s;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(30px, -30px) scale(1.1); }
-      66% { transform: translate(-20px, 20px) scale(0.9); }
-    }
 
     /* Lightbox */
     .lightbox-overlay {
@@ -811,9 +769,6 @@
   </style>
 </head>
 <body>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
   
   <header class="site-header">
     <h1>Media Gallery</h1>
@@ -839,7 +794,6 @@
     <section id="gallery" class="grid"></section>
   </main>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script>
     // API Configuration
     const API_URL = 'http://192.168.0.236:8085';
@@ -1040,15 +994,7 @@
       }
 
       function animateCards(){
-        if(window.gsap && mode === 'grid'){
-          gsap.from('#gallery.grid .card', {
-            opacity: 0,
-            y: 30,
-            duration: 0.7,
-            ease: 'power2.out',
-            clearProps: 'transform'
-          });
-        }
+        // animations removed
       }
 
       function formatDates(){
@@ -1067,51 +1013,9 @@
       }
 
       var cards = document.querySelectorAll('.card');
-      
+
       function updateParallax(){
-        cards = document.querySelectorAll('#gallery.grid .card');
-        
-        document.querySelectorAll('.card').forEach(function(card){
-          var clone = card.cloneNode(true);
-          card.parentNode.replaceChild(clone, card);
-        });
-        
-        cards = document.querySelectorAll('#gallery.grid .card');
-        cards.forEach(function(card) {
-          card.addEventListener('mousemove', function(e) {
-            if(mode !== 'grid') return;
-            
-            var rect = card.getBoundingClientRect();
-            var x = e.clientX - rect.left;
-            var y = e.clientY - rect.top;
-
-            var centerX = rect.width / 2;
-            var centerY = rect.height / 2;
-
-            var rotateX = (y - centerY) / 25;
-            var rotateY = (centerX - x) / 25;
-
-            gsap.to(card, {
-              rotateX: rotateX,
-              rotateY: rotateY,
-              duration: 0.4,
-              ease: 'power2.out',
-              transformPerspective: 1000,
-              transformStyle: 'preserve-3d'
-            });
-          });
-
-          card.addEventListener('mouseleave', function() {
-            if(mode !== 'grid') return;
-            
-            gsap.to(card, {
-              rotateX: 0,
-              rotateY: 0,
-              duration: 0.6,
-              ease: 'power2.out'
-            });
-          });
-        });
+        // tilt effect removed
       }
 
       // Expose functions globally
@@ -1119,18 +1023,6 @@
       window.updateParallaxGlobal = updateParallax;
       window.animateCardsGlobal = animateCards;
 
-      // Stagger header elements
-      gsap.from(".site-header > *", {
-        opacity: 0,
-        y: 20,
-        duration: 0.8,
-        stagger: 0.1,
-        ease: "power2.out",
-        delay: 0.3
-      });
-
-      // Stagger control buttons - set initial state then animate
-      gsap.set(".controls", { opacity: 1 });
 
       if(btn){
         btn.addEventListener('click', function(){ 
@@ -1138,7 +1030,6 @@
           apply();
           formatDates();
 
-          gsap.set('#gallery .card', { clearProps: 'all' });
           updateParallax();
           
           setTimeout(function(){ 
@@ -1146,22 +1037,6 @@
           }, 50);
         });
 
-        // Button hover effect
-        btn.addEventListener('mouseenter', function() {
-          gsap.to(this, {
-            scale: 1.02,
-            duration: 0.3,
-            ease: 'power2.out'
-          });
-        });
-
-        btn.addEventListener('mouseleave', function() {
-          gsap.to(this, {
-            scale: 1,
-            duration: 0.3,
-            ease: 'power2.out'
-          });
-        });
       }
 
       apply();
@@ -1439,43 +1314,9 @@
           window.location.href = '/website/account';
         });
 
-        // Logout button hover effect
-        logoutBtn.addEventListener('mouseenter', function() {
-          gsap.to(this, {
-            scale: 1.05,
-            duration: 0.3,
-            ease: 'power2.out'
-          });
-        });
-
-        logoutBtn.addEventListener('mouseleave', function() {
-          gsap.to(this, {
-            scale: 1,
-            duration: 0.3,
-            ease: 'power2.out'
-          });
-        });
       }
 
-      // Upload button hover effect
-      var uploadBtn = document.getElementById('uploadLink');
-      if (uploadBtn) {
-        uploadBtn.addEventListener('mouseenter', function() {
-          gsap.to(this, {
-            scale: 1.05,
-            duration: 0.3,
-            ease: 'power2.out'
-          });
-        });
 
-        uploadBtn.addEventListener('mouseleave', function() {
-          gsap.to(this, {
-            scale: 1,
-            duration: 0.3,
-            ease: 'power2.out'
-          });
-        });
-      }
 
       // Gerar Thumbnails handler
       var generateThumbnailsBtn = document.getElementById('generateThumbnailsBtn');
@@ -1485,22 +1326,6 @@
           generateMissingThumbnails();
         });
 
-        // Button hover effect
-        generateThumbnailsBtn.addEventListener('mouseenter', function() {
-          gsap.to(this, {
-            scale: 1.02,
-            duration: 0.3,
-            ease: 'power2.out'
-          });
-        });
-
-        generateThumbnailsBtn.addEventListener('mouseleave', function() {
-          gsap.to(this, {
-            scale: 1,
-            duration: 0.3,
-            ease: 'power2.out'
-          });
-        });
       }
 
       // Sort mode handler
@@ -1552,22 +1377,6 @@
           }
         });
 
-        // Button hover effect
-        sortBtn.addEventListener('mouseenter', function() {
-          gsap.to(this, {
-            scale: 1.02,
-            duration: 0.3,
-            ease: 'power2.out'
-          });
-        });
-
-        sortBtn.addEventListener('mouseleave', function() {
-          gsap.to(this, {
-            scale: 1,
-            duration: 0.3,
-            ease: 'power2.out'
-          });
-        });
       }
     })();
 

@@ -72,35 +72,6 @@
       100% { transform: translate(30px, 30px) rotate(0deg); }
     }
 
-    /* Orbs */
-    .orb {
-      position: fixed;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 0;
-      filter: blur(80px);
-      opacity: 0.5;
-      animation: float 20s ease-in-out infinite;
-    }
-
-    .orb-1 {
-      top: 10%;
-      left: 10%;
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(167, 139, 250, 0.3), transparent 70%);
-      animation-delay: 0s;
-    }
-
-    .orb-2 {
-      bottom: 15%;
-      right: 10%;
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, rgba(192, 132, 252, 0.3), transparent 70%);
-      animation-delay: -10s;
-    }
-
     @keyframes float {
       0%, 100% { transform: translate(0, 0) scale(1); }
       33% { transform: translate(30px, -30px) scale(1.1); }
@@ -743,8 +714,6 @@
   </style>
 </head>
 <body>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
   
   <header class="site-header">
     <h1><a href="/">Media Gallery</a></h1>
