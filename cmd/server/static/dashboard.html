@@ -621,6 +621,144 @@
       border-color: rgba(255, 255, 255, 0.4);
     }
 
+    /* Loading Indicator */
+    .lightbox-loader {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      text-align: center;
+    }
+
+    .lightbox-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(167, 139, 250, 0.2);
+      border-top-color: #a78bfa;
+      border-right-color: #c084fc;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .lightbox-loader-text {
+      font-size: 16px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      max-width: 300px;
+      letter-spacing: 0.5px;
+    }
+
+    .lightbox-loader-subtext {
+      font-size: 13px;
+      color: var(--text-secondary);
+      opacity: 0.7;
+      margin-top: 8px;
+    }
+
+    /* Error State */
+    .lightbox-error {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10000;
+      background: rgba(28, 24, 37, 0.95);
+      backdrop-filter: blur(20px);
+      border: 2px solid rgba(239, 68, 68, 0.5);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    .lightbox-error-icon {
+      font-size: 48px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .lightbox-error-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ef4444;
+      letter-spacing: 0.5px;
+    }
+
+    .lightbox-error-message {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .lightbox-error-actions {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      flex-direction: column;
+    }
+
+    .lightbox-error-actions button {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+
+    .lightbox-error-actions .retry-btn {
+      background: linear-gradient(135deg, #a78bfa, #c084fc);
+      color: white;
+    }
+
+    .lightbox-error-actions .retry-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(167, 139, 250, 0.4);
+    }
+
+    .lightbox-error-actions .close-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-secondary);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .lightbox-error-actions .close-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .container {
@@ -1043,6 +1181,38 @@
 
       function onKeyClose(e){ if(e.key === 'Escape') closeLightbox(); }
 
+      function createLoader() {
+        var loader = document.createElement('div');
+        loader.className = 'lightbox-loader';
+        loader.innerHTML = `
+          <div class="lightbox-spinner"></div>
+          <div>
+            <div class="lightbox-loader-text">Carregando mídia...</div>
+            <div class="lightbox-loader-subtext">Aguarde enquanto a mídia é transferida</div>
+          </div>
+        `;
+        return loader;
+      }
+
+      function createErrorState(errorMsg, retryCallback) {
+        var errorDiv = document.createElement('div');
+        errorDiv.className = 'lightbox-error';
+        errorDiv.innerHTML = `
+          <div class="lightbox-error-icon">⚠️</div>
+          <div class="lightbox-error-title">Erro ao Carregar</div>
+          <div class="lightbox-error-message">${errorMsg}</div>
+          <div class="lightbox-error-actions">
+            <button class="retry-btn">↻ Tentar Novamente</button>
+            <button class="close-btn">Fechar</button>
+          </div>
+        `;
+        var retryBtn = errorDiv.querySelector('.retry-btn');
+        var closeBtn = errorDiv.querySelector('.close-btn');
+        retryBtn.addEventListener('click', retryCallback);
+        closeBtn.addEventListener('click', closeLightbox);
+        return errorDiv;
+      }
+
       function openLightbox(type, src){
         closeLightbox();
         var overlay = document.createElement('div');
@@ -1088,13 +1258,11 @@
           v.playsInline = true;
           v.style.display = 'block';
           content.appendChild(v);
-          v.addEventListener('loadeddata', function(){ try{ if(overlay.requestFullscreen) overlay.requestFullscreen(); }catch(e){} });
         } else {
           var img = document.createElement('img');
           img.src = src;
           img.alt = '';
           content.appendChild(img);
-          img.addEventListener('load', function(){ try{ if(overlay.requestFullscreen) overlay.requestFullscreen(); }catch(e){} });
         }
 
         overlay.appendChild(content);
@@ -1115,6 +1283,117 @@
 
         currentLightbox = overlay;
         document.addEventListener('keydown', onKeyClose);
+      }
+
+      function openLightboxWithLoading(type, mediaID) {
+        closeLightbox();
+        var overlay = document.createElement('div');
+        overlay.className = 'lightbox-overlay';
+
+        var loader = createLoader();
+        overlay.appendChild(loader);
+
+        var content = document.createElement('div');
+        content.className = 'lightbox-content';
+        content.style.display = 'none';
+        overlay.appendChild(content);
+
+        var closeBtn = document.createElement('button');
+        closeBtn.className = 'lightbox-close';
+        closeBtn.innerHTML = '✕';
+        closeBtn.addEventListener('click', closeLightbox);
+        overlay.appendChild(closeBtn);
+
+        lb_pointerMoveHandler = function(ev){
+          var clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+          if(clientX > window.innerWidth - 120){
+            closeBtn.classList.add('visible');
+          } else {
+            closeBtn.classList.remove('visible');
+          }
+        };
+
+        lb_pointerDownHandler = function(ev){ lb_pointerDownX = ev.touches ? ev.touches[0].clientX : ev.clientX; };
+        lb_pointerMoveCloseHandler = function(ev){
+          if(lb_pointerDownX === null) return;
+          var clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+          var delta = clientX - lb_pointerDownX;
+          if(delta > 120){ closeLightbox(); }
+        };
+        lb_pointerUpHandler = function(){ lb_pointerDownX = null; };
+
+        lb_fullscreenChangeHandler = function(){
+          if(currentLightbox && !document.fullscreenElement){
+            closeLightbox();
+          }
+        };
+
+        document.body.appendChild(overlay);
+        try{ if(overlay.requestFullscreen) overlay.requestFullscreen(); }catch(e){}
+        overlay.focus && overlay.focus();
+
+        document.addEventListener('mousemove', lb_pointerMoveHandler);
+        document.addEventListener('touchmove', lb_pointerMoveHandler, { passive:true });
+        document.addEventListener('pointerdown', lb_pointerDownHandler);
+        document.addEventListener('pointermove', lb_pointerMoveCloseHandler);
+        document.addEventListener('pointerup', lb_pointerUpHandler);
+        document.addEventListener('fullscreenchange', lb_fullscreenChangeHandler);
+        document.addEventListener('webkitfullscreenchange', lb_fullscreenChangeHandler);
+
+        currentLightbox = overlay;
+        document.addEventListener('keydown', onKeyClose);
+
+        // Carregar mídia do servidor
+        authFetch('/api/media/' + mediaID + '/file')
+          .then(function(resp) {
+            if (!resp.ok) throw new Error('Erro ao carregar mídia');
+            return resp.blob();
+          })
+          .then(function(blob) {
+            // Verificar se o lightbox ainda está aberto
+            if(currentLightbox !== overlay) return;
+
+            var blobUrl = window.URL.createObjectURL(blob);
+            var media = null;
+
+            if(type === 'video'){
+              media = document.createElement('video');
+              media.src = blobUrl;
+              media.controls = true;
+              media.autoplay = true;
+              media.playsInline = true;
+            } else {
+              media = document.createElement('img');
+              media.src = blobUrl;
+              media.alt = '';
+            }
+
+            media.style.display = 'block';
+
+            // Limpar conteúdo anterior
+            content.innerHTML = '';
+            content.appendChild(media);
+
+            // Remover loader e mostrar conteúdo
+            if(loader && loader.parentNode) {
+              loader.parentNode.removeChild(loader);
+            }
+            content.style.display = 'flex';
+          })
+          .catch(function(err) {
+            console.error('Erro ao carregar mídia:', err);
+            // Verificar se o lightbox ainda está aberto
+            if(currentLightbox !== overlay) return;
+
+            if(loader && loader.parentNode) {
+              loader.parentNode.removeChild(loader);
+            }
+            var errorState = createErrorState(
+              'Não foi possível carregar a mídia. Verifique sua conexão de internet e tente novamente.',
+              function() { openLightboxWithLoading(type, mediaID); }
+            );
+            overlay.appendChild(errorState);
+          });
       }
 
       function closeLightbox(){
@@ -1147,17 +1426,8 @@
         var type = card.getAttribute('data-type');
         var mediaID = card.href.split('/').pop();
         
-        // Load media through authFetch and create blob URL
-        authFetch('/api/media/' + mediaID + '/file')
-          .then(function(resp) { return resp.blob(); })
-          .then(function(blob) {
-            var blobUrl = window.URL.createObjectURL(blob);
-            openLightbox(type, blobUrl);
-          })
-          .catch(function(err) {
-            console.error('Erro ao carregar mídia para lightbox:', err);
-            alert('Erro ao carregar mídia');
-          });
+        // Abrir lightbox com loading enquanto carrega a mídia
+        openLightboxWithLoading(type, mediaID);
       });
 
       // Logout handler
@@ -1165,13 +1435,8 @@
       if (logoutBtn) {
         logoutBtn.addEventListener('click', function(e) {
           e.preventDefault();
-          authFetch('/api/logout', { method: 'POST' }).then(function(){
-            localStorage.removeItem('authToken');
-            window.location.href = '/website/account';
-          }).catch(function(){
-            localStorage.removeItem('authToken');
-            window.location.href = '/website/account';
-          });
+          localStorage.removeItem('authToken');
+          window.location.href = '/website/account';
         });
 
         // Logout button hover effect
