@@ -30,6 +30,7 @@ func (h *MediaHandler) RegisterRoutes(r *gin.Engine) {
 		mediaRoutes.DELETE("/:id", middleware.AuthMiddleware(), h.DeleteMedia)
 		mediaRoutes.GET("/owner/:ownerID/missing-thumbnails", middleware.AuthMiddleware(), h.GetMediaWithMissingThumbnails)
 		mediaRoutes.POST("/:id/generate-thumbnail", middleware.AuthMiddleware(), h.GenerateThumbnail)
+		mediaRoutes.POST("/:id/delete-thumbnail", middleware.AuthMiddleware(), h.DeleteThumbnail)
 	}
 }
 
@@ -402,5 +403,50 @@ func (h *MediaHandler) GenerateThumbnail(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":   "Thumbnail gerado com sucesso",
 		"thumbnail": thumbnailName,
+	})
+}
+
+func (h *MediaHandler) DeleteThumbnail(c *gin.Context) {
+	id := c.Param("id")
+	mediaID, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		return
+	}
+
+	media, err := h.service.GetMediaByID(uint(mediaID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Mídia não encontrada"})
+		return
+	}
+
+	// Verifica se o usuário é o proprietário
+	currentUserIDInterface := c.MustGet("userID")
+	var currentUserID uint
+
+	switch v := currentUserIDInterface.(type) {
+	case uint:
+		currentUserID = v
+	case uint64:
+		currentUserID = uint(v)
+	case float64:
+		currentUserID = uint(v)
+	default:
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "ID de usuário inválido"})
+		return
+	}
+
+	if media.OwnerID != currentUserID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Acesso negado"})
+		return
+	}
+
+	if err := h.service.DeleteThumbnail(uint(mediaID)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Erro ao deletar thumbnail: %v", err)})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Thumbnail deletado com sucesso",
 	})
 }

@@ -14,6 +14,7 @@ type MediaService interface {
 	GetMediaByID(id uint) (*model.Media, error)
 	GetMediaByOwner(ownerID uint) ([]model.Media, error)
 	DeleteMedia(id uint) error
+	DeleteThumbnail(mediaID uint) error
 	UpdateMedia(media *model.Media) error
 	GenerateThumbnailViaAPI(media *model.Media) (string, error)
 }
@@ -157,6 +158,24 @@ func (s *mediaService) DeleteMedia(id uint) error {
 
 	// Deleta registro do banco de dados
 	return s.repo.Delete(id)
+}
+
+func (s *mediaService) DeleteThumbnail(mediaID uint) error {
+	media, err := s.repo.FindByID(mediaID)
+	if err != nil {
+		return fmt.Errorf("mídia não encontrada: %w", err)
+	}
+
+	if media.Thumbnail == "" {
+		return nil
+	}
+
+	if err := utils.DeleteThumbnailFile(media.Thumbnail); err != nil {
+		fmt.Printf("Aviso: erro ao deletar thumbnail: %v\n", err)
+	}
+
+	media.Thumbnail = ""
+	return s.repo.Update(media)
 }
 
 func (s *mediaService) UpdateMedia(media *model.Media) error {

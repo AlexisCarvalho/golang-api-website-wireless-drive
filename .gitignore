@@ -20,6 +20,7 @@ build/
 dist/
 out/
 pkg/
+backup/
 
 # Dependency directories
 vendor/

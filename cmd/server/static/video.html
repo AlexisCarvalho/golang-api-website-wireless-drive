@@ -327,6 +327,30 @@
       box-shadow: 0 12px 35px rgba(192, 132, 252, 0.6);
     }
 
+    .btn.generate {
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(167, 139, 250, 0.18));
+      color: white;
+      border: 1px solid rgba(167, 139, 250, 0.25);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
+    }
+
+    .btn.generate:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(167, 139, 250, 0.4);
+    }
+
+    .btn.delete-thumb {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(239, 68, 68, 0.28));
+      color: white;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.18);
+    }
+
+    .btn.delete-thumb:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(239, 68, 68, 0.36);
+    }
+
     .btn:active {
       transform: translateY(-1px);
     }
@@ -406,6 +430,8 @@
         <a class="download" href="#" id="downloadLink">
           <button class="btn download">⬇️ Baixar</button>
         </a>
+        <button class="btn generate" id="generateThumbnailBtn" type="button" style="display:none">🖼️ Gerar thumbnail</button>
+        <button class="btn delete-thumb" id="deleteThumbnailBtn" type="button" style="display:none">🗑️ Deletar thumbnail</button>
       </div>
 
       <div class="file-info">
@@ -567,6 +593,37 @@
             e.preventDefault();
             downloadFileWithAuth(fileUrl, data.Filename);
           });
+
+          var generateBtn = document.getElementById('generateThumbnailBtn');
+          var deleteThumbBtn = document.getElementById('deleteThumbnailBtn');
+          if (data.Type === 'image' || data.Type === 'video') {
+            if (generateBtn) {
+              generateBtn.style.display = 'inline-flex';
+              generateBtn.disabled = false;
+              generateBtn.textContent = '🖼️ Gerar thumbnail';
+              generateBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                generateThumbnailForMedia(data.ID);
+              });
+            }
+
+            if (deleteThumbBtn) {
+              deleteThumbBtn.style.display = 'inline-flex';
+              deleteThumbBtn.disabled = false;
+              deleteThumbBtn.textContent = '🗑️ Deletar thumbnail';
+              deleteThumbBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                deleteThumbnailForMedia(data.ID);
+              });
+            }
+          } else {
+            if (generateBtn) {
+              generateBtn.style.display = 'none';
+            }
+            if (deleteThumbBtn) {
+              deleteThumbBtn.style.display = 'none';
+            }
+          }
         })
         .catch(function(err) {
           console.error('Erro ao carregar mídia:', err);
@@ -590,6 +647,82 @@
         })
         .catch(function(err) {
           alert('Erro ao baixar arquivo: ' + err.message);
+        });
+    }
+
+    function generateThumbnailForMedia(mediaID) {
+      var generateBtn = document.getElementById('generateThumbnailBtn');
+      if (!generateBtn) return;
+
+      generateBtn.disabled = true;
+      generateBtn.textContent = '⏳ Gerando...';
+
+      authFetch('/api/media/' + mediaID + '/generate-thumbnail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+        .then(function(resp) {
+          return resp.json().then(function(data) {
+            if (!resp.ok) {
+              throw new Error(data.error || data.message || 'Erro ao gerar thumbnail');
+            }
+            return data;
+          });
+        })
+        .then(function(data) {
+          generateBtn.textContent = '✅ Gerado';
+          setTimeout(function() {
+            generateBtn.textContent = '🖼️ Gerar thumbnail';
+          }, 2500);
+        })
+        .catch(function(err) {
+          alert('Erro ao gerar thumbnail: ' + err.message);
+          generateBtn.textContent = '↻ Tentar novamente';
+        })
+        .finally(function() {
+          setTimeout(function() {
+            generateBtn.disabled = false;
+          }, 1000);
+        });
+    }
+
+    function deleteThumbnailForMedia(mediaID) {
+      var deleteThumbBtn = document.getElementById('deleteThumbnailBtn');
+      if (!deleteThumbBtn) return;
+
+      if (!confirm('Tem certeza que deseja deletar o thumbnail desta mídia?')) {
+        return;
+      }
+
+      deleteThumbBtn.disabled = true;
+      deleteThumbBtn.textContent = '⏳ Deletando...';
+
+      authFetch('/api/media/' + mediaID + '/delete-thumbnail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+        .then(function(resp) {
+          return resp.json().then(function(data) {
+            if (!resp.ok) {
+              throw new Error(data.error || data.message || 'Erro ao deletar thumbnail');
+            }
+            return data;
+          });
+        })
+        .then(function(data) {
+          deleteThumbBtn.textContent = '✅ Deletado';
+          setTimeout(function() {
+            deleteThumbBtn.textContent = '🗑️ Deletar thumbnail';
+          }, 2500);
+        })
+        .catch(function(err) {
+          alert('Erro ao deletar thumbnail: ' + err.message);
+          deleteThumbBtn.textContent = '↻ Tentar novamente';
+        })
+        .finally(function() {
+          setTimeout(function() {
+            deleteThumbBtn.disabled = false;
+          }, 1000);
         });
     }
 
