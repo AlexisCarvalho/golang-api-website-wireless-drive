@@ -532,102 +532,174 @@
     // Load media data from API
     function loadMediaData() {
       const mediaID = getMediaID();
-      
+
       authFetch('/api/media/' + mediaID)
         .then(function(resp) { return resp.json(); })
         .then(function(data) {
+
           document.getElementById('mediaTitle').textContent = data.Title;
-          document.getElementById('mediaDate').textContent = '📅 ' + new Date(data.CreatedAt).toLocaleString();
+          document.getElementById('mediaDate').textContent =
+            '📅 ' + new Date(data.CreatedAt).toLocaleString();
+
           document.getElementById('mediaType').textContent = data.Type;
           document.getElementById('mediaMimeType').textContent = data.MimeType;
           document.getElementById('mediaID').textContent = '#' + data.ID;
-          
+
+
           if (data.Description) {
             document.getElementById('mediaDescription').textContent = data.Description;
             document.getElementById('mediaDescription').style.display = 'block';
           }
-          
+
+
           const fileUrl = '/api/media/' + data.ID + '/file';
           const container = document.getElementById('mediaContentContainer');
-          
+
+
           if (data.Type === 'video') {
-            authFetch(fileUrl)
-              .then(function(resp) { return resp.blob(); })
-              .then(function(blob) {
-                var blobUrl = window.URL.createObjectURL(blob);
+
+            // Solicita URL temporária de streaming
+            authFetch('/api/media/' + data.ID + '/stream-url')
+              .then(function(resp) {
+                return resp.json();
+              })
+              .then(function(streamData) {
+
                 var videoElement = document.createElement('div');
                 videoElement.className = 'media-container';
-                videoElement.innerHTML = '<video id="player" controls preload="metadata"><source src="' + blobUrl + '" type="' + data.MimeType + '">Seu navegador não suporta o elemento de vídeo.</video>';
+
+                videoElement.innerHTML =
+                  '<video id="player" controls preload="metadata">' +
+                    '<source src="' + API_URL + streamData.url + '" type="' + data.MimeType + '">' +
+                    'Seu navegador não suporta o elemento de vídeo.' +
+                  '</video>';
+
+
                 container.innerHTML = '';
                 container.appendChild(videoElement);
+
               })
               .catch(function(err) {
                 console.error('Erro ao carregar vídeo:', err);
               });
-            document.querySelector('.btn.download').textContent = '⬇️ Baixar vídeo';
+
+
+            document.querySelector('.btn.download').textContent =
+              '⬇️ Baixar vídeo';
+
+
           } else if (data.Type === 'image') {
+
+
             authFetch(fileUrl)
-              .then(function(resp) { return resp.blob(); })
+              .then(function(resp) {
+                return resp.blob();
+              })
               .then(function(blob) {
+
                 var blobUrl = window.URL.createObjectURL(blob);
+
                 var imgElement = document.createElement('div');
                 imgElement.className = 'media-container';
-                imgElement.innerHTML = '<img src="' + blobUrl + '" alt="' + data.Title + '">';
+
+                imgElement.innerHTML =
+                  '<img src="' + blobUrl + '" alt="' + data.Title + '">';
+
+
                 container.innerHTML = '';
                 container.appendChild(imgElement);
+
               })
               .catch(function(err) {
                 console.error('Erro ao carregar imagem:', err);
               });
-            document.querySelector('.btn.download').textContent = '⬇️ Baixar imagem';
+
+
+            document.querySelector('.btn.download').textContent =
+              '⬇️ Baixar imagem';
+
+
           } else {
-            container.innerHTML = '<div style="font-size:5rem;text-align:center;padding:60px 20px;background:linear-gradient(135deg,rgba(167,139,250,0.08) 0%,rgba(192,132,252,0.08) 100%);border-radius:16px;margin:24px 0;filter:drop-shadow(0 4px 20px rgba(167,139,250,0.2))">📄</div>';
-            document.querySelector('.btn.download').textContent = '⬇️ Baixar arquivo';
+
+            container.innerHTML =
+              '<div style="font-size:5rem;text-align:center;padding:60px 20px;background:linear-gradient(135deg,rgba(167,139,250,0.08) 0%,rgba(192,132,252,0.08) 100%);border-radius:16px;margin:24px 0;filter:drop-shadow(0 4px 20px rgba(167,139,250,0.2))">📄</div>';
+
+            document.querySelector('.btn.download').textContent =
+              '⬇️ Baixar arquivo';
           }
-          
+
+
           document.getElementById('downloadLink').href = '#';
           document.getElementById('downloadLink').download = data.Filename;
-          
-          // Adiciona event listener para download com authFetch
-          document.getElementById('downloadLink').addEventListener('click', function(e) {
-            e.preventDefault();
-            downloadFileWithAuth(fileUrl, data.Filename);
-          });
+
+
+          document.getElementById('downloadLink')
+            .addEventListener('click', function(e) {
+
+              e.preventDefault();
+
+              downloadFileWithAuth(
+                fileUrl,
+                data.Filename
+              );
+
+            });
+
 
           var generateBtn = document.getElementById('generateThumbnailBtn');
           var deleteThumbBtn = document.getElementById('deleteThumbnailBtn');
+
+
           if (data.Type === 'image' || data.Type === 'video') {
+
             if (generateBtn) {
+
               generateBtn.style.display = 'inline-flex';
               generateBtn.disabled = false;
               generateBtn.textContent = '🖼️ Gerar thumbnail';
+
               generateBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 generateThumbnailForMedia(data.ID);
               });
+
             }
 
+
             if (deleteThumbBtn) {
+
               deleteThumbBtn.style.display = 'inline-flex';
               deleteThumbBtn.disabled = false;
               deleteThumbBtn.textContent = '🗑️ Deletar thumbnail';
+
               deleteThumbBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 deleteThumbnailForMedia(data.ID);
               });
+
             }
+
+
           } else {
+
             if (generateBtn) {
               generateBtn.style.display = 'none';
             }
+
             if (deleteThumbBtn) {
               deleteThumbBtn.style.display = 'none';
             }
+
           }
+
         })
         .catch(function(err) {
+
           console.error('Erro ao carregar mídia:', err);
-          document.getElementById('mediaTitle').textContent = 'Erro ao carregar';
+
+          document.getElementById('mediaTitle').textContent =
+            'Erro ao carregar';
+
         });
     }
     

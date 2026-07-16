@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"wireless_gallery/internal/config"
 	"wireless_gallery/internal/handler"
@@ -37,7 +38,16 @@ func main() {
 	// GIN
 	// =========================
 	r := gin.Default()
-	r.Use(cors.Default())
+
+	// CORS PRIMEIRO e MÁXIMO PERMISSIVO (antes de qualquer rota ou middleware)
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
+	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
+	corsConfig.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization", "X-Requested-With"}
+	corsConfig.ExposeHeaders = []string{"Content-Length"}
+	corsConfig.AllowCredentials = false // false com AllowAllOrigins
+	corsConfig.MaxAge = 12 * time.Hour
+	r.Use(cors.New(corsConfig))
 
 	// =========================
 	// FRONTEND (SPA)
@@ -56,6 +66,7 @@ func main() {
 	basePath := config.GetEnv("BASE_PATH", ".")
 	thumbsDir := config.GetEnv("THUMBS_DIR", "thumbs")
 	thumbsPath := filepath.Join(basePath, thumbsDir)
+
 	r.Static("/thumbs", thumbsPath)
 
 	// =========================
