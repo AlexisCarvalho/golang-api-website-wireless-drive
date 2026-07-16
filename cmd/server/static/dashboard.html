@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -44,7 +43,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background:
+      background: 
         radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
         radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
       pointer-events: none;
@@ -58,7 +57,7 @@
       right: -50%;
       width: 200%;
       height: 200%;
-      background:
+      background: 
         linear-gradient(45deg, transparent 48%, rgba(99, 102, 241, 0.03) 50%, transparent 52%),
         linear-gradient(-45deg, transparent 48%, rgba(139, 92, 246, 0.03) 50%, transparent 52%);
       background-size: 60px 60px;
@@ -69,13 +68,8 @@
     }
 
     @keyframes gridMove {
-      0% {
-        transform: translate(0, 0) rotate(0deg);
-      }
-
-      100% {
-        transform: translate(30px, 30px) rotate(0deg);
-      }
+      0% { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(30px, 30px) rotate(0deg); }
     }
 
     .container {
@@ -120,15 +114,8 @@
     }
 
     @keyframes gradientShift {
-
-      0%,
-      100% {
-        background-position: 0% 50%;
-      }
-
-      50% {
-        background-position: 100% 50%;
-      }
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
     }
 
     @keyframes fadeInDown {
@@ -136,7 +123,6 @@
         opacity: 1;
         transform: translateY(0);
       }
-
       from {
         opacity: 0;
         transform: translateY(-30px);
@@ -164,17 +150,8 @@
     }
 
     @keyframes iconPulse {
-
-      0%,
-      100% {
-        transform: scale(1);
-        filter: drop-shadow(0 0 15px rgba(167, 139, 250, 0.6));
-      }
-
-      50% {
-        transform: scale(1.08);
-        filter: drop-shadow(0 0 25px rgba(192, 132, 252, 0.8));
-      }
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(167, 139, 250, 0.6)); }
+      50% { transform: scale(1.08); filter: drop-shadow(0 0 25px rgba(192, 132, 252, 0.8)); }
     }
 
     .site-header nav {
@@ -207,7 +184,7 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
       transition: left 0.6s ease;
     }
 
@@ -486,7 +463,7 @@
     }
 
     /* Empty State */
-    #gallery>p {
+    #gallery > p {
       grid-column: 1 / -1;
       text-align: center;
       padding: 100px 20px;
@@ -501,14 +478,13 @@
         opacity: 0;
         transform: scale(0.9);
       }
-
       to {
         opacity: 1;
         transform: scale(1);
       }
     }
 
-    #gallery>p::before {
+    #gallery > p::before {
       content: '🎬';
       display: block;
       font-size: 5rem;
@@ -516,7 +492,7 @@
       filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.5));
     }
 
-    #gallery>p a {
+    #gallery > p a {
       color: white;
       text-decoration: none;
       font-weight: 700;
@@ -529,7 +505,7 @@
       box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
     }
 
-    #gallery>p a:hover {
+    #gallery > p a:hover {
       transform: translateY(-4px) scale(1.05);
       box-shadow: 0 12px 40px rgba(139, 92, 246, 0.6);
     }
@@ -551,13 +527,8 @@
     }
 
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-      }
-
-      to {
-        opacity: 1;
-      }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .lightbox-content {
@@ -633,9 +604,7 @@
     }
 
     @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+      to { transform: rotate(360deg); }
     }
 
     .lightbox-loader-text {
@@ -680,7 +649,6 @@
         opacity: 0;
         transform: translate(-50%, -50%) scale(0.95);
       }
-
       to {
         opacity: 1;
         transform: translate(-50%, -50%) scale(1);
@@ -693,15 +661,8 @@
     }
 
     @keyframes pulse {
-
-      0%,
-      100% {
-        transform: scale(1);
-      }
-
-      50% {
-        transform: scale(1.1);
-      }
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
     }
 
     .lightbox-error-title {
@@ -807,7 +768,6 @@
     }
   </style>
 </head>
-
 <body>
 
   <header class="site-header">
@@ -858,18 +818,18 @@
     // Function to sort medias based on current sort mode
     function sortMedias(medias) {
       var copy = medias.slice(); // Create a copy to avoid mutating original
-      switch (sortMode) {
+      switch(sortMode) {
         case 'asc':
-          return copy.sort(function (a, b) {
+          return copy.sort(function(a, b) {
             return a.Title.localeCompare(b.Title);
           });
         case 'desc':
-          return copy.sort(function (a, b) {
+          return copy.sort(function(a, b) {
             return b.Title.localeCompare(a.Title);
           });
         case 'date':
         default:
-          return copy.sort(function (a, b) {
+          return copy.sort(function(a, b) {
             return new Date(b.CreatedAt) - new Date(a.CreatedAt);
           });
       }
@@ -878,14 +838,19 @@
     // Render medias to gallery from sorted array
     function renderMedias(medias) {
       gallery.innerHTML = '';
-      medias.forEach(function (media) {
+      medias.forEach(function(media) {
         // Construir URL do arquivo baseado no tipo
         var fileUrl = '/api/media/' + media.ID + '/file';
         var thumbUrl = media.Thumbnail ? '/thumbs/' + media.Thumbnail : '';
 
         var card = document.createElement('a');
         card.className = 'card';
-        card.href = '/website/media/' + media.ID;
+        card.href = '/website/media?id=' + media.ID;
+
+        // Método antigo salvo para referência
+        // card.href = '/website/media/' + media.ID;
+
+        card.setAttribute('data-id', media.ID);
         card.setAttribute('data-type', media.Type);
         card.setAttribute('data-src', fileUrl);
         card.setAttribute('data-mime', media.MimeType);
@@ -929,7 +894,7 @@
         gallery.appendChild(card);
       });
 
-      setTimeout(function () {
+      setTimeout(function() {
         if (window.formatDatesGlobal) window.formatDatesGlobal();
         if (window.updateParallaxGlobal) window.updateParallaxGlobal();
         if (window.animateCardsGlobal) window.animateCardsGlobal();
@@ -938,9 +903,9 @@
 
     // Load medias from API
     function loadMedias() {
-      authFetch('/api/media/owner/')
-        .then(function (resp) { return resp.json(); })
-        .then(function (data) {
+      authFetch('/api/media/owner')
+        .then(function(resp) { return resp.json(); })
+        .then(function(data) {
           if (data.medias && data.medias.length > 0) {
             // Store all medias
             allMedias = data.medias;
@@ -951,7 +916,7 @@
             gallery.innerHTML = '<p>Sem mídias ainda. Faça um <a href="/website/upload">upload</a>.</p>';
           }
         })
-        .catch(function (err) {
+        .catch(function(err) {
           console.error('Erro ao carregar mídias:', err);
           gallery.innerHTML = '<p>Erro ao carregar mídias. <a href="/website/upload">Faça um upload</a>.</p>';
         });
@@ -968,17 +933,17 @@
       loadMedias();
     }
 
-    window.addEventListener("DOMContentLoaded", function () {
+    window.addEventListener("DOMContentLoaded", function() {
       setTimeout(initializeDashboard, 100);
     });
 
-    (function () {
+    (function(){
       var btn = document.getElementById('toggleView');
       var gallery = document.getElementById('gallery');
       var mode = 'grid';
 
-      function apply() {
-        if (mode === 'compact') {
+      function apply(){
+        if(mode === 'compact'){
           gallery.classList.remove('grid');
           gallery.classList.add('compact');
           btn.innerHTML = '<span id="viewIcon">▦</span> Ver como Grid';
@@ -989,19 +954,19 @@
         }
       }
 
-      function animateCards() {
+      function animateCards(){
         // animations removed
       }
 
-      function formatDates() {
-        document.querySelectorAll('#gallery .card .muted').forEach(function (el) {
+      function formatDates(){
+        document.querySelectorAll('#gallery .card .muted').forEach(function(el){
           var txt = el.textContent.trim();
           var d = new Date(txt);
-          if (!isNaN(d.getTime())) {
-            var opts = { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-            try {
+          if(!isNaN(d.getTime())){
+            var opts = { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' };
+            try{
               el.textContent = d.toLocaleString(undefined, opts);
-            } catch (e) {
+            }catch(e){
               el.textContent = d.toLocaleDateString();
             }
           }
@@ -1010,7 +975,7 @@
 
       var cards = document.querySelectorAll('.card');
 
-      function updateParallax() {
+      function updateParallax(){
         // tilt effect removed
       }
 
@@ -1020,15 +985,15 @@
       window.animateCardsGlobal = animateCards;
 
 
-      if (btn) {
-        btn.addEventListener('click', function () {
+      if(btn){
+        btn.addEventListener('click', function(){
           mode = (mode === 'grid' ? 'compact' : 'grid');
           apply();
           formatDates();
 
           updateParallax();
 
-          setTimeout(function () {
+          setTimeout(function(){
             animateCards();
           }, 50);
         });
@@ -1039,7 +1004,7 @@
       formatDates();
       updateParallax();
 
-      setTimeout(function () { animateCards(); }, 100);
+      setTimeout(function(){ animateCards(); }, 100);
 
       // Lightbox
       var currentLightbox = null;
@@ -1050,7 +1015,7 @@
       var lb_fullscreenChangeHandler = null;
       var lb_pointerDownX = null;
 
-      function onKeyClose(e) { if (e.key === 'Escape') closeLightbox(); }
+      function onKeyClose(e){ if(e.key === 'Escape') closeLightbox(); }
 
       function createLoader() {
         var loader = document.createElement('div');
@@ -1084,80 +1049,14 @@
         return errorDiv;
       }
 
-      function openLightbox(type, src) {
-        closeLightbox();
-        var overlay = document.createElement('div');
-        overlay.className = 'lightbox-overlay';
-
-        var content = document.createElement('div');
-        content.className = 'lightbox-content';
-
-        var closeBtn = document.createElement('button');
-        closeBtn.className = 'lightbox-close';
-        closeBtn.innerHTML = '✕';
-        closeBtn.addEventListener('click', closeLightbox);
-
-        lb_pointerMoveHandler = function (ev) {
-          var clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
-          if (clientX > window.innerWidth - 120) {
-            closeBtn.classList.add('visible');
-          } else {
-            closeBtn.classList.remove('visible');
-          }
-        };
-
-        lb_pointerDownHandler = function (ev) { lb_pointerDownX = ev.touches ? ev.touches[0].clientX : ev.clientX; };
-        lb_pointerMoveCloseHandler = function (ev) {
-          if (lb_pointerDownX === null) return;
-          var clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
-          var delta = clientX - lb_pointerDownX;
-          if (delta > 120) { closeLightbox(); }
-        };
-        lb_pointerUpHandler = function () { lb_pointerDownX = null; };
-
-        lb_fullscreenChangeHandler = function () {
-          if (currentLightbox && !document.fullscreenElement) {
-            closeLightbox();
-          }
-        };
-
-        if (type === 'video') {
-          var v = document.createElement('video');
-          v.src = src;
-          v.controls = true;
-          v.autoplay = true;
-          v.playsInline = true;
-          v.style.display = 'block';
-          content.appendChild(v);
-        } else {
-          var img = document.createElement('img');
-          img.src = src;
-          img.alt = '';
-          content.appendChild(img);
-        }
-
-        overlay.appendChild(content);
-        overlay.appendChild(closeBtn);
-        overlay.addEventListener('click', function (ev) { if (ev.target === overlay) closeLightbox(); });
-        document.body.appendChild(overlay);
-
-        try { if (overlay.requestFullscreen) overlay.requestFullscreen(); } catch (e) { }
-        overlay.focus && overlay.focus();
-
-        document.addEventListener('mousemove', lb_pointerMoveHandler);
-        document.addEventListener('touchmove', lb_pointerMoveHandler, { passive: true });
-        document.addEventListener('pointerdown', lb_pointerDownHandler);
-        document.addEventListener('pointermove', lb_pointerMoveCloseHandler);
-        document.addEventListener('pointerup', lb_pointerUpHandler);
-        document.addEventListener('fullscreenchange', lb_fullscreenChangeHandler);
-        document.addEventListener('webkitfullscreenchange', lb_fullscreenChangeHandler);
-
-        currentLightbox = overlay;
-        document.addEventListener('keydown', onKeyClose);
-      }
-
       function openLightboxWithLoading(type, mediaID) {
         closeLightbox();
+
+        if(type !== 'image' && type !== 'video') {
+          window.location.href = '/website/media?id=' + mediaID;
+          return;
+        }
+
         var overlay = document.createElement('div');
         overlay.className = 'lightbox-overlay';
 
@@ -1175,36 +1074,36 @@
         closeBtn.addEventListener('click', closeLightbox);
         overlay.appendChild(closeBtn);
 
-        lb_pointerMoveHandler = function (ev) {
+        lb_pointerMoveHandler = function(ev){
           var clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
-          if (clientX > window.innerWidth - 120) {
+          if(clientX > window.innerWidth - 120){
             closeBtn.classList.add('visible');
           } else {
             closeBtn.classList.remove('visible');
           }
         };
 
-        lb_pointerDownHandler = function (ev) { lb_pointerDownX = ev.touches ? ev.touches[0].clientX : ev.clientX; };
-        lb_pointerMoveCloseHandler = function (ev) {
-          if (lb_pointerDownX === null) return;
+        lb_pointerDownHandler = function(ev){ lb_pointerDownX = ev.touches ? ev.touches[0].clientX : ev.clientX; };
+        lb_pointerMoveCloseHandler = function(ev){
+          if(lb_pointerDownX === null) return;
           var clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
           var delta = clientX - lb_pointerDownX;
-          if (delta > 120) { closeLightbox(); }
+          if(delta > 120){ closeLightbox(); }
         };
-        lb_pointerUpHandler = function () { lb_pointerDownX = null; };
+        lb_pointerUpHandler = function(){ lb_pointerDownX = null; };
 
-        lb_fullscreenChangeHandler = function () {
-          if (currentLightbox && !document.fullscreenElement) {
+        lb_fullscreenChangeHandler = function(){
+          if(currentLightbox && !document.fullscreenElement){
             closeLightbox();
           }
         };
 
         document.body.appendChild(overlay);
-        try { if (overlay.requestFullscreen) overlay.requestFullscreen(); } catch (e) { }
+        try{ if(overlay.requestFullscreen) overlay.requestFullscreen(); }catch(e){}
         overlay.focus && overlay.focus();
 
         document.addEventListener('mousemove', lb_pointerMoveHandler);
-        document.addEventListener('touchmove', lb_pointerMoveHandler, { passive: true });
+        document.addEventListener('touchmove', lb_pointerMoveHandler, { passive:true });
         document.addEventListener('pointerdown', lb_pointerDownHandler);
         document.addEventListener('pointermove', lb_pointerMoveCloseHandler);
         document.addEventListener('pointerup', lb_pointerUpHandler);
@@ -1219,7 +1118,7 @@
 
           // Obtém URL temporária de streaming
           authFetch('/api/media/' + mediaID + '/stream-url')
-            .then(function (resp) {
+            .then(function(resp) {
 
               if (!resp.ok) {
                 throw new Error('Erro ao obter URL de streaming');
@@ -1228,10 +1127,10 @@
               return resp.json();
 
             })
-            .then(function (streamData) {
+            .then(function(streamData) {
 
               // Verificar se o lightbox ainda está aberto
-              if (currentLightbox !== overlay) return;
+              if(currentLightbox !== overlay) return;
 
 
               var media = document.createElement('video');
@@ -1251,30 +1150,30 @@
 
 
               // Remover loader e mostrar conteúdo
-              if (loader && loader.parentNode) {
+              if(loader && loader.parentNode) {
                 loader.parentNode.removeChild(loader);
               }
 
               content.style.display = 'flex';
 
             })
-            .catch(function (err) {
+            .catch(function(err) {
 
               console.error('Erro ao carregar vídeo:', err);
 
 
               // Verificar se o lightbox ainda está aberto
-              if (currentLightbox !== overlay) return;
+              if(currentLightbox !== overlay) return;
 
 
-              if (loader && loader.parentNode) {
+              if(loader && loader.parentNode) {
                 loader.parentNode.removeChild(loader);
               }
 
 
               var errorState = createErrorState(
                 'Não foi possível carregar a mídia. Verifique sua conexão de internet e tente novamente.',
-                function () {
+                function() {
                   openLightboxWithLoading(type, mediaID);
                 }
               );
@@ -1285,11 +1184,11 @@
             });
 
 
-        } else {
+        } else if (type === 'image') {
 
           // Imagem continua usando blob
           authFetch('/api/media/' + mediaID + '/file')
-            .then(function (resp) {
+            .then(function(resp) {
 
               if (!resp.ok) {
                 throw new Error('Erro ao carregar mídia');
@@ -1298,10 +1197,10 @@
               return resp.blob();
 
             })
-            .then(function (blob) {
+            .then(function(blob) {
 
               // Verificar se o lightbox ainda está aberto
-              if (currentLightbox !== overlay) return;
+              if(currentLightbox !== overlay) return;
 
 
               var blobUrl = window.URL.createObjectURL(blob);
@@ -1320,30 +1219,30 @@
 
 
               // Remover loader e mostrar conteúdo
-              if (loader && loader.parentNode) {
+              if(loader && loader.parentNode) {
                 loader.parentNode.removeChild(loader);
               }
 
               content.style.display = 'flex';
 
             })
-            .catch(function (err) {
+            .catch(function(err) {
 
               console.error('Erro ao carregar imagem:', err);
 
 
               // Verificar se o lightbox ainda está aberto
-              if (currentLightbox !== overlay) return;
+              if(currentLightbox !== overlay) return;
 
 
-              if (loader && loader.parentNode) {
+              if(loader && loader.parentNode) {
                 loader.parentNode.removeChild(loader);
               }
 
 
               var errorState = createErrorState(
                 'Não foi possível carregar a mídia. Verifique sua conexão de internet e tente novamente.',
-                function () {
+                function() {
                   openLightboxWithLoading(type, mediaID);
                 }
               );
@@ -1352,38 +1251,40 @@
               overlay.appendChild(errorState);
 
             });
+        } else {
+          closeLightbox();
         }
       }
 
-      function closeLightbox() {
-        if (!currentLightbox) return;
+      function closeLightbox(){
+        if(!currentLightbox) return;
         var v = currentLightbox.querySelector('video');
-        if (v) { try { v.pause(); v.removeAttribute('src'); v.load && v.load(); } catch (e) { } }
-        try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) { }
+        if(v){ try{ v.pause(); v.removeAttribute('src'); v.load && v.load(); }catch(e){} }
+        try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){}
 
-        if (lb_pointerMoveHandler) document.removeEventListener('mousemove', lb_pointerMoveHandler);
-        if (lb_pointerMoveHandler) document.removeEventListener('touchmove', lb_pointerMoveHandler);
-        if (lb_pointerDownHandler) document.removeEventListener('pointerdown', lb_pointerDownHandler);
-        if (lb_pointerMoveCloseHandler) document.removeEventListener('pointermove', lb_pointerMoveCloseHandler);
-        if (lb_pointerUpHandler) document.removeEventListener('pointerup', lb_pointerUpHandler);
-        if (lb_fullscreenChangeHandler) document.removeEventListener('fullscreenchange', lb_fullscreenChangeHandler);
-        if (lb_fullscreenChangeHandler) document.removeEventListener('webkitfullscreenchange', lb_fullscreenChangeHandler);
+        if(lb_pointerMoveHandler) document.removeEventListener('mousemove', lb_pointerMoveHandler);
+        if(lb_pointerMoveHandler) document.removeEventListener('touchmove', lb_pointerMoveHandler);
+        if(lb_pointerDownHandler) document.removeEventListener('pointerdown', lb_pointerDownHandler);
+        if(lb_pointerMoveCloseHandler) document.removeEventListener('pointermove', lb_pointerMoveCloseHandler);
+        if(lb_pointerUpHandler) document.removeEventListener('pointerup', lb_pointerUpHandler);
+        if(lb_fullscreenChangeHandler) document.removeEventListener('fullscreenchange', lb_fullscreenChangeHandler);
+        if(lb_fullscreenChangeHandler) document.removeEventListener('webkitfullscreenchange', lb_fullscreenChangeHandler);
 
         lb_pointerMoveHandler = lb_pointerDownHandler = lb_pointerMoveCloseHandler = lb_pointerUpHandler = lb_fullscreenChangeHandler = null;
         lb_pointerDownX = null;
 
-        if (currentLightbox && currentLightbox.parentNode) currentLightbox.parentNode.removeChild(currentLightbox);
+        if(currentLightbox && currentLightbox.parentNode) currentLightbox.parentNode.removeChild(currentLightbox);
         currentLightbox = null;
         document.removeEventListener('keydown', onKeyClose);
       }
 
-      document.addEventListener('click', function (ev) {
+      document.addEventListener('click', function(ev){
         var card = ev.target.closest('a.card');
-        if (!card) return;
-        if (mode !== 'compact') return;
+        if(!card) return;
+        if(mode !== 'compact') return;
         ev.preventDefault();
         var type = card.getAttribute('data-type');
-        var mediaID = card.href.split('/').pop();
+        var mediaID = card.getAttribute('data-id');
 
         // Abrir lightbox com loading enquanto carrega a mídia
         openLightboxWithLoading(type, mediaID);
@@ -1392,7 +1293,7 @@
       // Logout handler
       var logoutBtn = document.getElementById('logoutBtn');
       if (logoutBtn) {
-        logoutBtn.addEventListener('click', function (e) {
+        logoutBtn.addEventListener('click', function(e) {
           e.preventDefault();
           localStorage.removeItem('authToken');
           window.location.href = '/website/account';
@@ -1405,7 +1306,7 @@
       // Gerar Thumbnails handler
       var generateThumbnailsBtn = document.getElementById('generateThumbnailsBtn');
       if (generateThumbnailsBtn) {
-        generateThumbnailsBtn.addEventListener('click', function (e) {
+        generateThumbnailsBtn.addEventListener('click', function(e) {
           e.preventDefault();
           generateMissingThumbnails();
         });
@@ -1419,7 +1320,7 @@
           var icon = '📅';
           var label = 'Data';
 
-          switch (sortMode) {
+          switch(sortMode) {
             case 'asc':
               icon = '🔤';
               label = 'A→Z';
@@ -1437,11 +1338,11 @@
           sortBtn.innerHTML = '<span id="sortIcon">' + icon + '</span> ' + label;
         }
 
-        sortBtn.addEventListener('click', function (e) {
+        sortBtn.addEventListener('click', function(e) {
           e.preventDefault();
 
           // Cycle through sort modes: date -> asc -> desc -> date
-          switch (sortMode) {
+          switch(sortMode) {
             case 'date':
               sortMode = 'asc';
               break;
@@ -1473,13 +1374,13 @@
 
       // Busca mídias sem thumbnail
       authFetch('/api/media/owner/missing-thumbnails')
-        .then(function (resp) {
+        .then(function(resp) {
           if (!resp.ok) {
             throw new Error('Erro na resposta do servidor: ' + resp.status);
           }
           return resp.json();
         })
-        .then(function (data) {
+        .then(function(data) {
           if (data.count === 0) {
             alert('Todas as mídias já possuem thumbnails!');
             btn.disabled = false;
@@ -1487,29 +1388,30 @@
             return;
           }
 
+
           // Gera thumbnails para cada mídia
-          var promises = data.medias.map(function (media) {
+          var promises = data.medias.map(function(media) {
             return authFetch('/api/media/' + media.ID + '/generate-thumbnail', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' }
             })
-              .then(function (resp) {
-                if (!resp.ok) {
-                  throw new Error('Erro ao gerar thumbnail');
-                }
-                return resp.json();
-              })
-              .catch(function (err) {
-                console.error('Erro ao gerar thumbnail para ' + media.Title + ':', err);
-                alert('Erro ao gerar thumbnail para ' + media.Title)
-                return null;
-              });
+            .then(function(resp) {
+              if (!resp.ok) {
+                throw new Error('Erro ao gerar thumbnail');
+              }
+              return resp.json();
+            })
+            .catch(function(err) {
+              console.error('Erro ao gerar thumbnail para ' + media.Title + ':', err);
+              alert('Erro ao gerar thumbnail para ' + media.Title)
+              return null;
+            });
           });
 
           // Aguarda todos os thumbnails serem gerados
-          Promise.all(promises).then(function (results) {
+          Promise.all(promises).then(function(results) {
             // Recarrega as mídias
-            if (promises != null) {
+            if(promises != null) {
               loadMedias();
             }
 
@@ -1517,7 +1419,7 @@
             btn.innerHTML = originalText;
           });
         })
-        .catch(function (err) {
+        .catch(function(err) {
           console.error('Erro ao gerar thumbnails:', err);
           alert('Impossível gerar thumbnails, servidor indisponível ou erro inesperado');
           btn.disabled = false;
@@ -1526,5 +1428,4 @@
     }
   </script>
 </body>
-
 </html>

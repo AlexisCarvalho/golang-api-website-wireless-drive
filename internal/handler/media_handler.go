@@ -472,9 +472,8 @@ func (h *MediaHandler) UpdateMedia(c *gin.Context) {
 	if updateReq.Title != "" {
 		media.Title = updateReq.Title
 	}
-	if updateReq.Description != "" {
-		media.Description = updateReq.Description
-	}
+
+	media.Description = updateReq.Description
 
 	if err := h.service.UpdateMedia(media); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar mídia"})

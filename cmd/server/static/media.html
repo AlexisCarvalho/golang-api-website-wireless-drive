@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Vídeo - Media Gallery</title>
+  <title>Mídia - Media Gallery</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <style>
     * {
@@ -259,6 +259,117 @@
       line-height: 1.2;
     }
 
+    .title-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .title-row h1 {
+      margin-bottom: 0;
+      flex: 1;
+      min-width: 0;
+      word-break: break-word;
+    }
+
+    .edit-icon-btn {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid rgba(167, 139, 250, 0.25);
+      background: rgba(167, 139, 250, 0.1);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 1rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-top: 2px;
+    }
+
+    .edit-icon-btn:hover {
+      background: rgba(167, 139, 250, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(167, 139, 250, 0.25);
+    }
+
+    .edit-form {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding: 20px;
+      background: rgba(167, 139, 250, 0.05);
+      border: 1px solid rgba(167, 139, 250, 0.15);
+      border-radius: 14px;
+    }
+
+    .edit-form label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .edit-form input,
+    .edit-form textarea {
+      width: 100%;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.95rem;
+      resize: vertical;
+      transition: border-color 0.3s ease;
+    }
+
+    .edit-form input:focus,
+    .edit-form textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .edit-form textarea {
+      min-height: 90px;
+      line-height: 1.5;
+    }
+
+    .edit-form .edit-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .btn.save {
+      background: linear-gradient(135deg, #34d399, #10b981);
+      color: white;
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn.save:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(16, 185, 129, 0.45);
+    }
+
+    .btn.cancel {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-secondary);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .btn.cancel:hover {
+      transform: translateY(-3px);
+      background: rgba(255, 255, 255, 0.14);
+    }
+
     .muted {
       color: var(--text-secondary);
       opacity: 0.9;
@@ -417,10 +528,28 @@
 
   <main class="container">
     <div class="card">
-      <h1 id="mediaTitle">Carregando...</h1>
+      <div class="title-row">
+        <h1 id="mediaTitle">Carregando...</h1>
+        <button class="edit-icon-btn" id="editInfoBtn" type="button" title="Editar título e descrição">✏️</button>
+      </div>
       <div class="muted" id="mediaDate">📅 Carregando...</div>
-      
+
       <div id="mediaDescription" style="display:none;color:var(--text-secondary);line-height:1.7;margin-bottom:24px;padding:20px;background:rgba(167,139,250,0.05);border-left:3px solid var(--accent);border-radius:8px;font-size:1rem;"></div>
+
+      <div class="edit-form" id="editForm">
+        <div>
+          <label for="editTitleInput">Título</label>
+          <input type="text" id="editTitleInput" maxlength="255">
+        </div>
+        <div>
+          <label for="editDescriptionInput">Descrição</label>
+          <textarea id="editDescriptionInput"></textarea>
+        </div>
+        <div class="edit-actions">
+          <button class="btn save" id="saveInfoBtn" type="button">💾 Salvar</button>
+          <button class="btn cancel" id="cancelEditBtn" type="button">Cancelar</button>
+        </div>
+      </div>
 
       <div id="mediaContentContainer">
         <div style="font-size:5rem;text-align:center;padding:60px 20px;background:linear-gradient(135deg,rgba(167,139,250,0.08) 0%,rgba(192,132,252,0.08) 100%);border-radius:16px;margin:24px 0;filter:drop-shadow(0 4px 20px rgba(167,139,250,0.2))">📄</div>
@@ -454,6 +583,7 @@
   <script>
     // API Configuration
     const API_URL = 'http://192.168.0.236:8085';
+    let currentMediaData = null;
 
     // GSAP Animations
     window.addEventListener("DOMContentLoaded", function() {
@@ -523,10 +653,11 @@
       return fetch(fullUrl, opts);
     }
 
-    // Extract media ID from URL
+    // Extract media ID from params
     function getMediaID() {
-      const pathSegments = window.location.pathname.split('/');
-      return pathSegments[pathSegments.length - 1];
+      const params = new URLSearchParams(window.location.search);
+      const idFromQuery = params.get('id');
+      if (idFromQuery) return idFromQuery;
     }
 
     // Load media data from API
@@ -537,6 +668,11 @@
         .then(function(resp) { return resp.json(); })
         .then(function(data) {
 
+          currentMediaData = data;
+
+          var typeLabels = { video: 'Vídeo', audio: 'Áudio', image: 'Imagem', other: 'Arquivo' };
+          document.title = (typeLabels[data.Type] || 'Mídia') + ' - Media Gallery';
+
           document.getElementById('mediaTitle').textContent = data.Title;
           document.getElementById('mediaDate').textContent =
             '📅 ' + new Date(data.CreatedAt).toLocaleString();
@@ -544,6 +680,9 @@
           document.getElementById('mediaType').textContent = data.Type;
           document.getElementById('mediaMimeType').textContent = data.MimeType;
           document.getElementById('mediaID').textContent = '#' + data.ID;
+
+          document.getElementById('editTitleInput').value = data.Title || '';
+          document.getElementById('editDescriptionInput').value = data.Description || '';
 
 
           if (data.Description) {
@@ -586,6 +725,44 @@
 
             document.querySelector('.btn.download').textContent =
               '⬇️ Baixar vídeo';
+
+
+          } else if (data.Type === 'audio') {
+
+            // Solicita URL temporária de streaming
+            authFetch('/api/media/' + data.ID + '/stream-url')
+              .then(function(resp) {
+                return resp.json();
+              })
+              .then(function(streamData) {
+
+                var audioElement = document.createElement('div');
+                audioElement.className = 'media-container';
+                audioElement.style.padding = '32px 20px';
+                audioElement.style.display = 'flex';
+                audioElement.style.flexDirection = 'column';
+                audioElement.style.alignItems = 'center';
+                audioElement.style.gap = '20px';
+                audioElement.style.background = 'linear-gradient(135deg, rgba(167,139,250,0.08) 0%, rgba(192,132,252,0.08) 100%)';
+
+                audioElement.innerHTML =
+                  '<div style="font-size:4rem;filter:drop-shadow(0 4px 20px rgba(167,139,250,0.3))">🎧</div>' +
+                  '<audio id="player" controls preload="metadata" style="width:100%;max-width:500px">' +
+                    '<source src="' + API_URL + streamData.url + '" type="' + data.MimeType + '">' +
+                    'Seu navegador não suporta o elemento de áudio.' +
+                  '</audio>';
+
+                container.innerHTML = '';
+                container.appendChild(audioElement);
+
+              })
+              .catch(function(err) {
+                console.error('Erro ao carregar áudio:', err);
+              });
+
+
+            document.querySelector('.btn.download').textContent =
+              '⬇️ Baixar áudio';
 
 
           } else if (data.Type === 'image') {
@@ -650,7 +827,7 @@
           var deleteThumbBtn = document.getElementById('deleteThumbnailBtn');
 
 
-          if (data.Type === 'image' || data.Type === 'video') {
+          if (data.Type === 'image' || data.Type === 'video' || data.Type === 'audio') {
 
             if (generateBtn) {
 
@@ -804,6 +981,93 @@
         loadMediaData();
       }, 50);
     });
+
+    // Edit título/descrição
+    var editInfoBtn = document.getElementById('editInfoBtn');
+    var editForm = document.getElementById('editForm');
+    var cancelEditBtn = document.getElementById('cancelEditBtn');
+    var saveInfoBtn = document.getElementById('saveInfoBtn');
+
+    if (editInfoBtn) {
+      editInfoBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentMediaData) {
+          document.getElementById('editTitleInput').value = currentMediaData.Title || '';
+          document.getElementById('editDescriptionInput').value = currentMediaData.Description || '';
+        }
+        editForm.style.display = 'flex';
+        document.getElementById('editTitleInput').focus();
+      });
+    }
+
+    if (cancelEditBtn) {
+      cancelEditBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        editForm.style.display = 'none';
+      });
+    }
+
+    if (saveInfoBtn) {
+      saveInfoBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const mediaID = getMediaID();
+        const newTitle = document.getElementById('editTitleInput').value.trim();
+        const newDescription = document.getElementById('editDescriptionInput').value.trim();
+
+        if (!newTitle) {
+          alert('O título não pode ficar vazio.');
+          return;
+        }
+
+        saveInfoBtn.disabled = true;
+        saveInfoBtn.textContent = '⏳ Salvando...';
+
+        authFetch('/api/media/' + mediaID, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: newTitle, description: newDescription })
+        })
+          .then(function(resp) {
+            return resp.json().then(function(data) {
+              if (!resp.ok) {
+                throw new Error(data.error || data.message || 'Erro ao atualizar mídia');
+              }
+              return data;
+            });
+          })
+          .then(function() {
+            currentMediaData.Title = newTitle;
+            currentMediaData.Description = newDescription;
+
+            document.getElementById('mediaTitle').textContent = newTitle;
+
+            var descEl = document.getElementById('mediaDescription');
+            if (newDescription) {
+              descEl.textContent = newDescription;
+              descEl.style.display = 'block';
+            } else {
+              descEl.textContent = '';
+              descEl.style.display = 'none';
+            }
+
+            saveInfoBtn.textContent = '✅ Salvo';
+            setTimeout(function() {
+              editForm.style.display = 'none';
+              saveInfoBtn.textContent = '💾 Salvar';
+            }, 900);
+          })
+          .catch(function(err) {
+            alert('Erro ao atualizar mídia: ' + err.message);
+            saveInfoBtn.textContent = '💾 Salvar';
+          })
+          .finally(function() {
+            setTimeout(function() {
+              saveInfoBtn.disabled = false;
+            }, 900);
+          });
+      });
+    }
 
     // Delete handler
     var deleteBtn = document.getElementById('deleteBtn');

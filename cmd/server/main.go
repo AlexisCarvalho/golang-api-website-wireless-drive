@@ -5,7 +5,6 @@ import (
 	"io/fs"
 	"net/http"
 	"path/filepath"
-	"strconv"
 	"time"
 
 	"wireless_gallery/internal/config"
@@ -104,31 +103,8 @@ func main() {
 		c.FileFromFS("upload.html", http.FS(subFS))
 	})
 
-	r.GET("/website/media/:id", func(c *gin.Context) {
-		id := c.Param("id")
-		_, err := strconv.ParseUint(id, 10, 32)
-		if err != nil {
-			c.FileFromFS("account.html", http.FS(subFS))
-			return
-		}
-
-		// Fetch media from database to determine type
-		var media model.Media
-		if config.DB.First(&media, id).Error != nil {
-			c.FileFromFS("account.html", http.FS(subFS))
-			return
-		}
-
-		// Serve appropriate template based on media type
-		if media.Type == "video" {
-			c.FileFromFS("video.html", http.FS(subFS))
-		} else if media.Type == "audio" {
-			c.FileFromFS("audio.html", http.FS(subFS))
-		} else if media.Type == "image" {
-			c.FileFromFS("image.html", http.FS(subFS))
-		} else {
-			c.FileFromFS("file.html", http.FS(subFS))
-		}
+	r.GET("/website/media", func(c *gin.Context) {
+		c.FileFromFS("media.html", http.FS(subFS))
 	})
 
 	// Redirect / to /website/account
