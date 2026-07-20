@@ -270,7 +270,7 @@ func (h *MediaHandler) UploadMedia(c *gin.Context) {
 	description := c.PostForm("description")
 
 	// Faz upload
-	media, err := h.service.UploadMedia(file, title, description, uint(userID))
+	media, err := h.service.UploadMedia(file, title, description, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

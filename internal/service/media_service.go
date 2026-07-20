@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"mime/multipart"
 	"os"
+	"path/filepath"
 	"wireless_gallery/internal/model"
 	"wireless_gallery/internal/repository"
 	"wireless_gallery/internal/utils"
+
+	"github.com/google/uuid"
 )
 
 type MediaService interface {
@@ -60,7 +63,8 @@ func (s *mediaService) UploadMedia(file *multipart.FileHeader, title, descriptio
 	}
 
 	// Gera nome único para o arquivo
-	filename := fmt.Sprintf("%d_%s", ownerID, file.Filename)
+	ext := filepath.Ext(file.Filename)
+	filename := fmt.Sprintf("%s%s", uuid.NewString(), ext)
 	fullPath := utils.GetFullMediaPath(fileType, filename)
 
 	// Copia arquivo para o destino
