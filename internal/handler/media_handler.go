@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 	"wireless_gallery/internal/middleware"
 	"wireless_gallery/internal/service"
@@ -41,6 +42,7 @@ func (h *MediaHandler) RegisterRoutes(r *gin.Engine) {
 		mediaRoutes.GET("/:id/file", middleware.AuthMiddleware(), h.GetMediaFile)
 		mediaRoutes.GET("/:id/stream-url", middleware.AuthMiddleware(), h.GetStreamURL)
 		mediaRoutes.GET("/:id/stream", h.StreamMedia)
+		mediaRoutes.GET("/:id/download", h.DownloadMedia)
 		mediaRoutes.POST("/:id/generate-thumbnail", middleware.AuthMiddleware(), h.GenerateThumbnail)
 		mediaRoutes.POST("/:id/delete-thumbnail", middleware.AuthMiddleware(), h.DeleteThumbnail)
 		mediaRoutes.GET("/:id", middleware.AuthMiddleware(), h.GetMedia)
@@ -121,16 +123,51 @@ func (h *MediaHandler) GetStreamURL(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"url": fmt.Sprintf(
+	action := c.DefaultQuery("type", "stream")
+
+	var url string
+
+	switch action {
+	case "download":
+		url = fmt.Sprintf(
+			"/api/media/%d/download?token=%s",
+			media.ID,
+			signedToken,
+		)
+
+	default:
+		url = fmt.Sprintf(
 			"/api/media/%d/stream?token=%s",
 			media.ID,
 			signedToken,
-		),
+		)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"url": url,
 	})
 }
 
-func (h *MediaHandler) StreamMedia(c *gin.Context) {
+func sanitizeFileName(name string) string {
+	replacer := strings.NewReplacer(
+		"/", "_",
+		"\\", "_",
+		":", "_",
+		"*", "_",
+		"?", "_",
+		"\"", "_",
+		"<", "_",
+		">", "_",
+		"|", "_",
+	)
+
+	return strings.TrimSpace(replacer.Replace(name))
+}
+
+func (h *MediaHandler) serveMedia(
+	c *gin.Context,
+	download bool,
+) {
 
 	tokenString := c.Query("token")
 
@@ -163,9 +200,7 @@ func (h *MediaHandler) StreamMedia(c *gin.Context) {
 		return
 	}
 
-	media, err := h.service.GetMediaByID(
-		claims.MediaID,
-	)
+	media, err := h.service.GetMediaByID(claims.MediaID)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -174,13 +209,10 @@ func (h *MediaHandler) StreamMedia(c *gin.Context) {
 		return
 	}
 
-	// Verifica se o token pertence ao dono da mídia
 	if media.OwnerID != claims.UserID {
-
 		c.JSON(http.StatusForbidden, gin.H{
 			"error": "Acesso negado",
 		})
-
 		return
 	}
 
@@ -219,23 +251,55 @@ func (h *MediaHandler) StreamMedia(c *gin.Context) {
 		contentType = "application/octet-stream"
 	}
 
-	c.Header(
-		"Content-Type",
-		contentType,
-	)
+	c.Header("Content-Type", contentType)
+	c.Header("Accept-Ranges", "bytes")
 
-	c.Header(
-		"Accept-Ranges",
-		"bytes",
-	)
+	fileName := media.Filename
+
+	if download {
+
+		extension := filepath.Ext(media.Filename)
+
+		title := media.Title
+
+		// Remove a extensão apenas se ela já estiver no título
+		if strings.HasSuffix(
+			strings.ToLower(title),
+			strings.ToLower(extension),
+		) {
+			title = title[:len(title)-len(extension)]
+		}
+
+		title = sanitizeFileName(title)
+
+		fileName = fmt.Sprintf(
+			"%d_%s%s",
+			media.ID,
+			title,
+			extension,
+		)
+
+		c.Header(
+			"Content-Disposition",
+			fmt.Sprintf(`attachment; filename="%s"`, fileName),
+		)
+	}
 
 	http.ServeContent(
 		c.Writer,
 		c.Request,
-		media.Filename,
+		fileName,
 		stat.ModTime(),
 		file,
 	)
+}
+
+func (h *MediaHandler) StreamMedia(c *gin.Context) {
+	h.serveMedia(c, false)
+}
+
+func (h *MediaHandler) DownloadMedia(c *gin.Context) {
+	h.serveMedia(c, true)
 }
 
 // UploadMedia faz upload de um arquivo de mídia

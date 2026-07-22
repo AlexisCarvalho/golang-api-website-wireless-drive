@@ -581,11 +581,9 @@
   </main>
 
   <script>
-    // API Configuration
     const API_URL = 'http://192.168.0.236:8085';
     let currentMediaData = null;
 
-    // GSAP Animations
     window.addEventListener("DOMContentLoaded", function() {
       gsap.from(".site-header > *", {
         opacity: 0,
@@ -613,7 +611,6 @@
         ease: 'power2.out'
       });
 
-      // Format date in .muted
       document.querySelectorAll('.muted').forEach(function(el){
         var txt = el.textContent.replace(/^📅\s*/, '').trim();
         var d = new Date(txt);
@@ -628,7 +625,6 @@
       });
     });
 
-    // Button hover effects
     var buttons = document.querySelectorAll('.btn, .site-header nav a');
     buttons.forEach(function(btn) {
       btn.addEventListener('mouseenter', function() {
@@ -640,7 +636,6 @@
       });
     });
 
-    // Helper para fazer requisições autenticadas
     async function authFetch(url, opts = {}) {
       const token = localStorage.getItem('authToken');
       const fullUrl = url.startsWith('http') ? url : API_URL + url;
@@ -653,14 +648,12 @@
       return fetch(fullUrl, opts);
     }
 
-    // Extract media ID from params
     function getMediaID() {
       const params = new URLSearchParams(window.location.search);
       const idFromQuery = params.get('id');
       if (idFromQuery) return idFromQuery;
     }
 
-    // Load media data from API
     function loadMediaData() {
       const mediaID = getMediaID();
 
@@ -697,7 +690,6 @@
 
           if (data.Type === 'video') {
 
-            // Solicita URL temporária de streaming
             authFetch('/api/media/' + data.ID + '/stream-url')
               .then(function(resp) {
                 return resp.json();
@@ -729,7 +721,6 @@
 
           } else if (data.Type === 'audio') {
 
-            // Solicita URL temporária de streaming
             authFetch('/api/media/' + data.ID + '/stream-url')
               .then(function(resp) {
                 return resp.json();
@@ -811,17 +802,13 @@
 
 
           document.getElementById('downloadLink')
-            .addEventListener('click', function(e) {
+              .addEventListener('click', function (e) {
 
-              e.preventDefault();
+                  e.preventDefault();
 
-              downloadFileWithAuth(
-                fileUrl,
-                data.ID + "_" + data.Title
-              );
+                  downloadFileWithAuth(data.ID);
 
-            });
-
+              });
 
           var generateBtn = document.getElementById('generateThumbnailBtn');
           var deleteThumbBtn = document.getElementById('deleteThumbnailBtn');
@@ -880,21 +867,16 @@
         });
     }
     
-    // Download de arquivo com autenticação
-    function downloadFileWithAuth(url, filename) {
-      authFetch(url)
-        .then(function(resp) { return resp.blob(); })
-        .then(function(blob) {
-          var blobUrl = window.URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.href = blobUrl;
-          a.download = filename || 'download';
-          document.body.appendChild(a);
-          a.click();
-          window.URL.revokeObjectURL(blobUrl);
-          document.body.removeChild(a);
+    function downloadFileWithAuth(mediaId) {
+      authFetch('/api/media/' + mediaId + '/stream-url?type=download')
+        .then(function (resp) {
+          return resp.json();
         })
-        .catch(function(err) {
+        .then(function (streamData) {
+          window.location.href = API_URL + streamData.url;
+        })
+        .catch(function (err) {
+          console.error('Erro ao carregar arquivo:', err);
           alert('Erro ao baixar arquivo: ' + err.message);
         });
     }
@@ -975,14 +957,12 @@
         });
     }
 
-    // Load media on page ready
     window.addEventListener("DOMContentLoaded", function() {
       setTimeout(function() {
         loadMediaData();
       }, 50);
     });
 
-    // Edit título/descrição
     var editInfoBtn = document.getElementById('editInfoBtn');
     var editForm = document.getElementById('editForm');
     var cancelEditBtn = document.getElementById('cancelEditBtn');
@@ -1069,7 +1049,6 @@
       });
     }
 
-    // Delete handler
     var deleteBtn = document.getElementById('deleteBtn');
     if(deleteBtn){
       deleteBtn.addEventListener('click', function(e){
