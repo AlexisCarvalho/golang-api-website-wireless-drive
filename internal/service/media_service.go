@@ -13,7 +13,7 @@ import (
 )
 
 type MediaService interface {
-	UploadMedia(file *multipart.FileHeader, title, description string, ownerID uint) (*model.Media, error)
+	UploadMedia(file *multipart.FileHeader, title string, ownerID uint) (*model.Media, error)
 	GetMediaByID(id uint) (*model.Media, error)
 	GetMediaByOwner(ownerID uint) ([]model.Media, error)
 	DeleteMedia(id uint) error
@@ -30,7 +30,7 @@ func NewMediaService(r repository.MediaRepository) MediaService {
 	return &mediaService{repo: r}
 }
 
-func (s *mediaService) UploadMedia(file *multipart.FileHeader, title, description string, ownerID uint) (*model.Media, error) {
+func (s *mediaService) UploadMedia(file *multipart.FileHeader, title string, ownerID uint) (*model.Media, error) {
 	// Abre o arquivo enviado
 	src, err := file.Open()
 	if err != nil {
@@ -111,13 +111,12 @@ func (s *mediaService) UploadMedia(file *multipart.FileHeader, title, descriptio
 
 	// Cria registro no banco de dados
 	media := &model.Media{
-		Title:       title,
-		Description: description,
-		Type:        string(fileType),
-		Filename:    filename,
-		Thumbnail:   thumbnailName,
-		MimeType:    mimeType,
-		OwnerID:     ownerID,
+		Title:     title,
+		Type:      string(fileType),
+		Filename:  filename,
+		Thumbnail: thumbnailName,
+		MimeType:  mimeType,
+		OwnerID:   ownerID,
 	}
 
 	if err := s.repo.Create(media); err != nil {

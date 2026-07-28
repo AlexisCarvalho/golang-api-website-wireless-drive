@@ -530,20 +530,14 @@
     <div class="card">
       <div class="title-row">
         <h1 id="mediaTitle">Carregando...</h1>
-        <button class="edit-icon-btn" id="editInfoBtn" type="button" title="Editar título e descrição">✏️</button>
+        <button class="edit-icon-btn" id="editInfoBtn" type="button" title="Editar título">✏️</button>
       </div>
       <div class="muted" id="mediaDate">📅 Carregando...</div>
-
-      <div id="mediaDescription" style="display:none;color:var(--text-secondary);line-height:1.7;margin-bottom:24px;padding:20px;background:rgba(167,139,250,0.05);border-left:3px solid var(--accent);border-radius:8px;font-size:1rem;"></div>
 
       <div class="edit-form" id="editForm">
         <div>
           <label for="editTitleInput">Título</label>
           <input type="text" id="editTitleInput" maxlength="255">
-        </div>
-        <div>
-          <label for="editDescriptionInput">Descrição</label>
-          <textarea id="editDescriptionInput"></textarea>
         </div>
         <div class="edit-actions">
           <button class="btn save" id="saveInfoBtn" type="button">💾 Salvar</button>
@@ -675,14 +669,6 @@
           document.getElementById('mediaID').textContent = '#' + data.ID;
 
           document.getElementById('editTitleInput').value = data.Title || '';
-          document.getElementById('editDescriptionInput').value = data.Description || '';
-
-
-          if (data.Description) {
-            document.getElementById('mediaDescription').textContent = data.Description;
-            document.getElementById('mediaDescription').style.display = 'block';
-          }
-
 
           const fileUrl = '/api/media/' + data.ID + '/file';
           const container = document.getElementById('mediaContentContainer');
@@ -973,7 +959,6 @@
         e.preventDefault();
         if (currentMediaData) {
           document.getElementById('editTitleInput').value = currentMediaData.Title || '';
-          document.getElementById('editDescriptionInput').value = currentMediaData.Description || '';
         }
         editForm.style.display = 'flex';
         document.getElementById('editTitleInput').focus();
@@ -993,7 +978,6 @@
 
         const mediaID = getMediaID();
         const newTitle = document.getElementById('editTitleInput').value.trim();
-        const newDescription = document.getElementById('editDescriptionInput').value.trim();
 
         if (!newTitle) {
           alert('O título não pode ficar vazio.');
@@ -1006,7 +990,7 @@
         authFetch('/api/media/' + mediaID, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: newTitle, description: newDescription })
+          body: JSON.stringify({ title: newTitle })
         })
           .then(function(resp) {
             return resp.json().then(function(data) {
@@ -1018,18 +1002,8 @@
           })
           .then(function() {
             currentMediaData.Title = newTitle;
-            currentMediaData.Description = newDescription;
 
             document.getElementById('mediaTitle').textContent = newTitle;
-
-            var descEl = document.getElementById('mediaDescription');
-            if (newDescription) {
-              descEl.textContent = newDescription;
-              descEl.style.display = 'block';
-            } else {
-              descEl.textContent = '';
-              descEl.style.display = 'none';
-            }
 
             saveInfoBtn.textContent = '✅ Salvo';
             setTimeout(function() {

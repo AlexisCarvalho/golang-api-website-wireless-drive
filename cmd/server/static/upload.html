@@ -756,10 +756,8 @@
       <h3>Dicas</h3>
       <ul>
         <li>Formatos suportados: JPG, PNG, GIF, MP4, WebM, PDF, DOC, DOCX, PPT, XLS, TXT, ZIP</li>
-        <li>Tamanho máximo recomendado: 50MB por arquivo</li>
-        <li>Os títulos serão preenchidos automaticamente com o nome do arquivo</li>
-        <li>Descrições são opcionais</li>
-        <li>Vídeos serão processados automaticamente</li>
+        <li>Tamanho máximo recomendado para imagens: 50MB </li>
+        <li>Os títulos serão preenchidos automaticamente com o nome do arquivo e podem ser editados depois</li>
         <li>Você pode fazer upload de múltiplos arquivos simultaneamente</li>
       </ul>
     </div>
@@ -1069,7 +1067,6 @@
       // Auto-fill title with filename (without extension)
       const fileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
       formData.append('title', fileName);
-      formData.append('description', ''); // Empty description for batch uploads
 
       try {
         const response = await fetch(API_URL + '/api/media/upload', {

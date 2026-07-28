@@ -326,15 +326,13 @@ func (h *MediaHandler) UploadMedia(c *gin.Context) {
 		return
 	}
 
-	// Obtém título e descrição opcionais
 	title := c.PostForm("title")
 	if title == "" {
 		title = file.Filename
 	}
-	description := c.PostForm("description")
 
 	// Faz upload
-	media, err := h.service.UploadMedia(file, title, description, userID)
+	media, err := h.service.UploadMedia(file, title, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -496,8 +494,7 @@ func (h *MediaHandler) UpdateMedia(c *gin.Context) {
 	}
 
 	var updateReq struct {
-		Title       string `json:"title"`
-		Description string `json:"description"`
+		Title string `json:"title"`
 	}
 
 	if err := c.ShouldBindJSON(&updateReq); err != nil {
@@ -536,8 +533,6 @@ func (h *MediaHandler) UpdateMedia(c *gin.Context) {
 	if updateReq.Title != "" {
 		media.Title = updateReq.Title
 	}
-
-	media.Description = updateReq.Description
 
 	if err := h.service.UpdateMedia(media); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar mídia"})
