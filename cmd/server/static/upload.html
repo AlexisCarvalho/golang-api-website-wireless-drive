@@ -711,6 +711,39 @@
         padding: 16px;
       }
     }
+
+    .message {
+      margin-top: 24px;
+      padding: 16px 20px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 0.95em;
+      animation: slideIn 0.4s ease;
+      border: 2px solid;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.success {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: #a78bfa;
+      color: #a78bfa;
+    }
+
+    .message.error {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.6);
+      color: #fca5a5;
+    }
   </style>
 </head>
 <body>
@@ -1060,81 +1093,63 @@
       submitBtn.textContent = 'Enviar Uploads 🚀';
     }
 
-    async function uploadSingleFile(file, index) {
+    function uploadSingleFile(file, index) {
       const formData = new FormData();
       formData.append('file', file);
-      
+
       // Auto-fill title with filename (without extension)
       const fileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
       formData.append('title', fileName);
 
-      try {
-        const response = await fetch(API_URL + '/api/media/upload', {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+      const barEl = document.getElementById('progress-bar-' + index);
+      const percentEl = document.getElementById('progress-percent-' + index);
+      const statusEl = document.getElementById('progress-status-' + index);
+
+      return new Promise((resolve) => {
+        const xhr = new XMLHttpRequest();
+
+        xhr.open('POST', API_URL + '/api/media/upload');
+        xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('authToken'));
+
+        xhr.upload.addEventListener('progress', function(event) {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            barEl.style.width = percent + '%';
+            percentEl.textContent = percent + '%';
           }
         });
 
-        const result = await response.json();
+        xhr.addEventListener('load', function() {
+          let result = {};
+          try {
+            result = JSON.parse(xhr.responseText);
+          } catch (e) {
+          }
 
-        if (response.ok) {
-          document.getElementById('progress-status-' + index).textContent = '✅ Enviado com sucesso';
-          document.getElementById('progress-status-' + index).className = 'progress-status success';
-          document.getElementById('progress-bar-' + index).style.width = '100%';
-          document.getElementById('progress-percent-' + index).textContent = '100%';
-          return true;
-        } else {
-          const errorMsg = result.error || 'Erro desconhecido';
-          document.getElementById('progress-status-' + index).textContent = '❌ Erro: ' + errorMsg;
-          document.getElementById('progress-status-' + index).className = 'progress-status error';
-          return false;
-        }
-      } catch (error) {
-        document.getElementById('progress-status-' + index).textContent = '❌ Erro: ' + error.message;
-        document.getElementById('progress-status-' + index).className = 'progress-status error';
-        return false;
-      }
+          if (xhr.status >= 200 && xhr.status < 300) {
+            barEl.style.width = '100%';
+            percentEl.textContent = '100%';
+            statusEl.textContent = '✅ Enviado com sucesso';
+            statusEl.className = 'progress-status success';
+            resolve(true);
+          } else {
+            const errorMsg = result.error || 'Erro desconhecido';
+            statusEl.textContent = '❌ Erro: ' + errorMsg;
+            statusEl.className = 'progress-status error';
+            resolve(false);
+          }
+        });
+
+        xhr.addEventListener('error', function() {
+          statusEl.textContent = '❌ Erro: falha de conexão';
+          statusEl.className = 'progress-status error';
+          resolve(false);
+        });
+
+        xhr.send(formData);
+      });
     }
 
-    // Add message styles
-    var style = document.createElement('style');
-    style.textContent = `
-      .message {
-        margin-top: 24px;
-        padding: 16px 20px;
-        border-radius: 14px;
-        font-weight: 600;
-        font-size: 0.95em;
-        animation: slideIn 0.4s ease;
-        border: 2px solid;
-      }
-      
-      @keyframes slideIn {
-        from {
-          opacity: 0;
-          transform: translateY(-15px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      
-      .message.success {
-        background: rgba(99, 102, 241, 0.15);
-        border-color: #a78bfa;
-        color: #a78bfa;
-      }
-      
-      .message.error {
-        background: rgba(239, 68, 68, 0.15);
-        border-color: rgba(239, 68, 68, 0.6);
-        color: #fca5a5;
-      }
-    `;
-    document.head.appendChild(style);
   </script>
 </body>
 </html>
