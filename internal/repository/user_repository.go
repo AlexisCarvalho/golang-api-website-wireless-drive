@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"wireless_gallery/internal/model"
+	"wireless_drive/internal/model"
 
 	"gorm.io/gorm"
 )

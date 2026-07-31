@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"wireless_gallery/internal/config"
+	"wireless_drive/internal/config"
 )
 
 type FileType string

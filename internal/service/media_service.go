@@ -5,9 +5,9 @@ import (
 	"mime/multipart"
 	"os"
 	"path/filepath"
-	"wireless_gallery/internal/model"
-	"wireless_gallery/internal/repository"
-	"wireless_gallery/internal/utils"
+	"wireless_drive/internal/model"
+	"wireless_drive/internal/repository"
+	"wireless_drive/internal/utils"
 
 	"github.com/google/uuid"
 )

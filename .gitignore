@@ -10,7 +10,7 @@ ztemp/
 /uploads
 /thumbs
 TODO.md
-wireless_gallery.db
+wireless_drive.db
 
 # Output folders
 bin/

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Upload - Media Gallery</title>
+  <title>Upload - Wireless Drive</title>
   <style>
     * {
       margin: 0;
@@ -744,12 +744,94 @@
       border-color: rgba(239, 68, 68, 0.6);
       color: #fca5a5;
     }
+
+    .app-toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 380px;
+      pointer-events: none;
+    }
+
+    .app-toast {
+      pointer-events: auto;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: var(--bg-card, #1c1825);
+      border: 1px solid var(--border, rgba(167, 139, 250, 0.2));
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      color: var(--text-primary, #f3f4f6);
+      font-size: 0.9rem;
+      line-height: 1.4;
+      transform: translateX(120%);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .app-toast.visible {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .app-toast-icon {
+      font-size: 1.15rem;
+      flex-shrink: 0;
+      line-height: 1.3;
+    }
+
+    .app-toast-message {
+      flex: 1;
+      word-break: break-word;
+    }
+
+    .app-toast-close {
+      background: none;
+      border: none;
+      color: var(--text-secondary, #c4b5fd);
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .app-toast-close:hover {
+      color: var(--text-primary, #f3f4f6);
+    }
+
+    .app-toast.error { border-color: rgba(248, 113, 113, 0.45); }
+    .app-toast.error .app-toast-icon { color: #f87171; }
+
+    .app-toast.warning { border-color: rgba(251, 191, 36, 0.45); }
+    .app-toast.warning .app-toast-icon { color: #fbbf24; }
+
+    .app-toast.success { border-color: rgba(74, 222, 128, 0.45); }
+    .app-toast.success .app-toast-icon { color: #4ade80; }
+
+    .app-toast.info { border-color: rgba(167, 139, 250, 0.45); }
+    .app-toast.info .app-toast-icon { color: var(--accent, #a78bfa); }
+
+    @media (max-width: 480px) {
+      .app-toast-container {
+        left: 16px;
+        right: 16px;
+        top: 16px;
+        max-width: none;
+      }
+    }
   </style>
 </head>
 <body>
   
   <header class="site-header">
-    <h1><a href="/">Media Gallery</a></h1>
+    <h1><a href="/">Wireless Drive</a></h1>
     <a href="/website/dashboard" class="back-button"><span>←</span> Voltar</a>
   </header>
 
@@ -957,7 +1039,7 @@
       renderFilesList();
     }
 
-    // Animação no hover do formulário
+    // Form hover animation
     var form = document.querySelector('.upload-form');
     form.addEventListener('mouseenter', function() {
       gsap.to(this, {
@@ -995,6 +1077,75 @@
       });
     }
 
+    function getToastContainer() {
+      var el = document.getElementById('appToastContainer');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'appToastContainer';
+        el.className = 'app-toast-container';
+        document.body.appendChild(el);
+      }
+      return el;
+    }
+
+    // Substitui o alert() nativo por uma notificação não-bloqueante, no
+    // mesmo visual do resto do site. type: 'error' | 'warning' | 'success' | 'info'
+    function showAppAlert(message, type) {
+      type = type || 'error';
+      var icons = { error: '❌', warning: '⚠️', success: '✅', info: 'ℹ️' };
+
+      var container = getToastContainer();
+
+      var toast = document.createElement('div');
+      toast.className = 'app-toast ' + type;
+      toast.innerHTML =
+        '<div class="app-toast-icon">' + (icons[type] || icons.info) + '</div>' +
+        '<div class="app-toast-message"></div>' +
+        '<button type="button" class="app-toast-close" aria-label="Fechar">✕</button>';
+      toast.querySelector('.app-toast-message').textContent = message;
+
+      container.appendChild(toast);
+      requestAnimationFrame(function() {
+        toast.classList.add('visible');
+      });
+
+      var dismissTimer = setTimeout(dismiss, type === 'error' ? 7000 : 5000);
+
+      function dismiss() {
+        clearTimeout(dismissTimer);
+        toast.classList.remove('visible');
+        setTimeout(function() {
+          if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 300);
+      }
+
+      toast.querySelector('.app-toast-close').addEventListener('click', dismiss);
+      toast.addEventListener('mouseenter', function() { clearTimeout(dismissTimer); });
+      toast.addEventListener('mouseleave', function() { dismissTimer = setTimeout(dismiss, 2000); });
+    }
+
+    // Trata 401/403 num lugar só: avisa e manda pra tela de login. Usado
+    // pelo authFetch abaixo (e, no upload.html, também pelo XHR do envio,
+    // que não passa por authFetch).
+    var authFailureHandled = false;
+    function handleAuthFailure(status) {
+      if (authFailureHandled) return;
+      authFailureHandled = true;
+
+      localStorage.removeItem('authToken');
+
+      showAppAlert(
+        status === 403
+          ? 'Você não tem permissão para acessar isso. Redirecionando para o login...'
+          : 'Sua sessão expirou. Redirecionando para o login...',
+        'warning'
+      );
+
+      setTimeout(function() {
+        window.location.href = '/website/account';
+      }, 5000);
+    }
+
     // Helper para fazer requisições autenticadas
     async function authFetch(url, opts = {}) {
       const token = localStorage.getItem('authToken');
@@ -1005,7 +1156,18 @@
         ...(token ? { Authorization: 'Bearer ' + token } : {})
       };
 
-      return fetch(fullUrl, opts);
+      const response = await fetch(fullUrl, opts);
+
+      if (response.status === 401 || response.status === 403) {
+        handleAuthFailure(response.status);
+        // Navigation to the login screen has already been triggered.
+        // Return a promise that never resolves to prevent the caller's
+        // .then()/.catch() handlers from running afterward (and showing
+        // a second error that conflicts with the one above).
+        return new Promise(function() {});
+      }
+
+      return response;
     }
 
     // Handle upload
@@ -1014,7 +1176,10 @@
 
       const token = localStorage.getItem('authToken');
       if (!token) {
-        window.location.href = '/website/account';
+        showAppAlert('Você precisa entrar para enviar arquivos. Redirecionando...', 'warning');
+        setTimeout(function() {
+          window.location.href = '/website/account';
+        }, 5000);
         return;
       }
 
@@ -1132,6 +1297,16 @@
             statusEl.textContent = '✅ Enviado com sucesso';
             statusEl.className = 'progress-status success';
             resolve(true);
+          } else if (xhr.status === 401 || xhr.status === 403) {
+            // This request doesn't go through authFetch (it's a raw XHR used
+            // for upload progress), so handle it here the same way: notify
+            // the user and redirect to the login screen. handleAuthFailure
+            // already ensures this is triggered only once, even if multiple
+            // files fail at the same time.
+            statusEl.textContent = '❌ Sessão expirada';
+            statusEl.className = 'progress-status error';
+            handleAuthFailure(xhr.status);
+            resolve(false);
           } else {
             const errorMsg = result.error || 'Erro desconhecido';
             statusEl.textContent = '❌ Erro: ' + errorMsg;

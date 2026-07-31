@@ -1,8 +1,8 @@
 package service
 
 import (
-	"wireless_gallery/internal/model"
-	"wireless_gallery/internal/repository"
+	"wireless_drive/internal/model"
+	"wireless_drive/internal/repository"
 )
 
 type UserService interface {

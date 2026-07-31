@@ -12,7 +12,7 @@ var DB *gorm.DB
 
 func ConnectDB() {
 	basePath := GetEnv("BASE_PATH", ".")
-	dbName := GetEnv("DB_NAME", "wirelessGallery.db")
+	dbName := GetEnv("DB_NAME", "wirelessDrive.db")
 	dbPath := filepath.Join(basePath, dbName)
 
 	database, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})

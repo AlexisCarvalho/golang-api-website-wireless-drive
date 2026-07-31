@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 	"strings"
-	"wireless_gallery/internal/auth"
+	"wireless_drive/internal/auth"
 
 	"github.com/gin-gonic/gin"
 )

@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"wireless_gallery/internal/middleware"
-	"wireless_gallery/internal/service"
-	"wireless_gallery/internal/utils"
+	"wireless_drive/internal/middleware"
+	"wireless_drive/internal/service"
+	"wireless_drive/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -102,7 +102,7 @@ func (h *MediaHandler) GetStreamURL(c *gin.Context) {
 
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(
-				time.Now().Add(5 * time.Minute),
+				time.Now().Add(30 * time.Minute),
 			),
 		},
 	}

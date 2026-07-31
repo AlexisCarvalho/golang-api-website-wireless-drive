@@ -1,4 +1,4 @@
-module wireless_gallery
+module wireless_drive
 
 go 1.24.4
 

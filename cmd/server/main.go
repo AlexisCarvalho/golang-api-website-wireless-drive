@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"wireless_gallery/internal/config"
-	"wireless_gallery/internal/handler"
-	"wireless_gallery/internal/model"
-	"wireless_gallery/internal/repository"
-	service "wireless_gallery/internal/service"
+	"wireless_drive/internal/config"
+	"wireless_drive/internal/handler"
+	"wireless_drive/internal/model"
+	"wireless_drive/internal/repository"
+	service "wireless_drive/internal/service"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"

@@ -2,14 +2,14 @@ package handler
 
 import (
 	"net/http"
-	"wireless_gallery/internal/auth"
-	"wireless_gallery/internal/model"
+	"wireless_drive/internal/auth"
+	"wireless_drive/internal/model"
 
-	"wireless_gallery/internal/middleware"
+	"wireless_drive/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 
-	service "wireless_gallery/internal/service"
+	service "wireless_drive/internal/service"
 )
 
 type UserHandler struct {
