@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"log"
 	"mime"
 	"net/http"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"wireless_drive/internal/config"
 	"wireless_drive/internal/middleware"
 	"wireless_drive/internal/service"
 	"wireless_drive/internal/utils"
@@ -29,6 +31,17 @@ type StreamClaims struct {
 	jwt.RegisteredClaims
 }
 
+// streamSecret signs and validates short-lived stream/download tokens.
+var streamSecret = mustLoadStreamSecret()
+
+func mustLoadStreamSecret() []byte {
+	secret := config.GetEnv("STREAM_SECRET", "")
+	if secret == "" {
+		log.Fatal("STREAM_SECRET is not configured")
+	}
+	return []byte(secret)
+}
+
 func NewMediaHandler(s service.MediaService) *MediaHandler {
 	return &MediaHandler{service: s}
 }
@@ -39,60 +52,256 @@ func (h *MediaHandler) RegisterRoutes(r *gin.Engine) {
 		mediaRoutes.POST("/upload", middleware.AuthMiddleware(), h.UploadMedia)
 		mediaRoutes.GET("/owner", middleware.AuthMiddleware(), h.GetMediaByOwner)
 		mediaRoutes.GET("/owner/missing-thumbnails", middleware.AuthMiddleware(), h.GetMediaWithMissingThumbnails)
+		mediaRoutes.POST("/:id/generate-thumbnail", middleware.AuthMiddleware(), h.GenerateThumbnail)
+		mediaRoutes.POST("/:id/delete-thumbnail", middleware.AuthMiddleware(), h.DeleteThumbnail)
 		mediaRoutes.GET("/:id/file", middleware.AuthMiddleware(), h.GetMediaFile)
 		mediaRoutes.GET("/:id/stream-url", middleware.AuthMiddleware(), h.GetStreamURL)
 		mediaRoutes.GET("/:id/stream", h.StreamMedia)
 		mediaRoutes.GET("/:id/download", h.DownloadMedia)
-		mediaRoutes.POST("/:id/generate-thumbnail", middleware.AuthMiddleware(), h.GenerateThumbnail)
-		mediaRoutes.POST("/:id/delete-thumbnail", middleware.AuthMiddleware(), h.DeleteThumbnail)
 		mediaRoutes.GET("/:id", middleware.AuthMiddleware(), h.GetMedia)
 		mediaRoutes.PUT("/:id", middleware.AuthMiddleware(), h.UpdateMedia)
 		mediaRoutes.DELETE("/:id", middleware.AuthMiddleware(), h.DeleteMedia)
 	}
 }
 
+// +-----------+
+// | ENDPOINTS |
+// +-----------+
+
+// UploadMedia uploads a media file
+func (h *MediaHandler) UploadMedia(c *gin.Context) {
+	userID, ok := getCurrentUserID(c)
+	if !ok {
+		return
+	}
+
+	// Get file from the form
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File not found"})
+		return
+	}
+
+	title := c.PostForm("title")
+	if title == "" {
+		title = file.Filename
+	}
+
+	// Upload the media
+	media, err := h.service.UploadMedia(file, title, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Media uploaded successfully",
+		"media":   media,
+	})
+}
+
+// GetMediaByOwner returns all media for a given owner
+func (h *MediaHandler) GetMediaByOwner(c *gin.Context) {
+	currentUserID, ok := getCurrentUserID(c)
+	if !ok {
+		return
+	}
+
+	medias, ok := fetchOrServerError(c, h.service.GetMediaByOwner, currentUserID)
+	if !ok {
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"medias": medias,
+	})
+}
+
+// GetMediaWithMissingThumbnails returns media items without thumbnails
+func (h *MediaHandler) GetMediaWithMissingThumbnails(c *gin.Context) {
+	currentUserID, ok := getCurrentUserID(c)
+	if !ok {
+		return
+	}
+
+	medias, ok := fetchOrServerError(c, h.service.GetMediaByOwner, currentUserID)
+	if !ok {
+		return
+	}
+
+	// Filter only media without thumbnails
+	var missingThumbnails []interface{}
+	for _, media := range medias {
+		if media.Thumbnail == "" && (media.Type == "image" || media.Type == "video") {
+			missingThumbnails = append(missingThumbnails, gin.H{
+				"ID":       media.ID,
+				"Title":    media.Title,
+				"Type":     media.Type,
+				"Filename": media.Filename,
+				"MimeType": media.MimeType,
+			})
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"count":  len(missingThumbnails),
+		"medias": missingThumbnails,
+	})
+}
+
+// GenerateThumbnail creates a thumbnail for a specific media item using local ffmpeg or external API as a fallback
+func (h *MediaHandler) GenerateThumbnail(c *gin.Context) {
+	mediaID, ok := parseIDParam(c)
+	if !ok {
+		return
+	}
+
+	media, ok := fetchOrNotFound(c, h.service.GetMediaByID, mediaID, "Media not found")
+	if !ok {
+		return
+	}
+
+	currentUserID, ok := getCurrentUserID(c)
+	if !ok {
+		return
+	}
+
+	if !requireOwner(c, media.OwnerID, currentUserID) {
+		return
+	}
+
+	if media.Type != string(utils.IMAGE) && media.Type != string(utils.VIDEO) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Media type does not support thumbnails"})
+		return
+	}
+
+	fileType := utils.StringToFileType(media.Type)
+	fullPath := utils.GetFullMediaPath(fileType, media.Filename)
+
+	thumbnailName, err := h.service.GenerateThumbnail(fileType, media.Filename, fullPath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error generating thumbnail: %v", err)})
+		return
+	}
+
+	if thumbnailName != "" {
+		media.Thumbnail = thumbnailName
+		if err := h.service.UpdateMedia(media); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating media"})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":   "Thumbnail generated successfully",
+		"thumbnail": thumbnailName,
+	})
+}
+
+func (h *MediaHandler) DeleteThumbnail(c *gin.Context) {
+	mediaID, ok := parseIDParam(c)
+	if !ok {
+		return
+	}
+
+	media, ok := fetchOrNotFound(c, h.service.GetMediaByID, mediaID, "Media not found")
+	if !ok {
+		return
+	}
+
+	currentUserID, ok := getCurrentUserID(c)
+	if !ok {
+		return
+	}
+
+	if !requireOwner(c, media.OwnerID, currentUserID) {
+		return
+	}
+
+	if err := h.service.DeleteThumbnail(mediaID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error deleting thumbnail: %v", err)})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Thumbnail deleted successfully",
+	})
+}
+
+// GetMediaFile returns the media file
+func (h *MediaHandler) GetMediaFile(c *gin.Context) {
+	mediaID, ok := parseIDParam(c)
+	if !ok {
+		return
+	}
+
+	media, ok := fetchOrNotFound(c, h.service.GetMediaByID, mediaID, "Media not found")
+	if !ok {
+		return
+	}
+
+	currentUserID, ok := getCurrentUserID(c)
+	if !ok {
+		return
+	}
+
+	if !requireOwner(c, media.OwnerID, currentUserID) {
+		return
+	}
+
+	// Get the file path
+	fileType := utils.StringToFileType(media.Type)
+	fullPath := utils.GetFullMediaPath(fileType, media.Filename)
+
+	// Serve the file
+	file, err := os.Open(fullPath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error opening file"})
+		return
+	}
+	defer file.Close()
+
+	stat, err := file.Stat()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error getting file information"})
+		return
+	}
+
+	c.Header("Content-Disposition", "inline; filename=\""+media.Filename+"\"")
+	c.Header("Accept-Ranges", "bytes")
+	contentType := mime.TypeByExtension(filepath.Ext(media.Filename))
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+
+	c.Header("Content-Type", contentType)
+
+	http.ServeContent(
+		c.Writer,
+		c.Request,
+		media.Filename,
+		stat.ModTime(),
+		file,
+	)
+}
+
 func (h *MediaHandler) GetStreamURL(c *gin.Context) {
-	id := c.Param("id")
-
-	mediaID, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "ID inválido",
-		})
+	mediaID, ok := parseIDParam(c)
+	if !ok {
 		return
 	}
 
-	currentUserIDInterface := c.MustGet("userID")
-
-	var currentUserID uint
-
-	switch v := currentUserIDInterface.(type) {
-	case uint:
-		currentUserID = v
-	case uint64:
-		currentUserID = uint(v)
-	case float64:
-		currentUserID = uint(v)
-	default:
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "ID de usuário inválido",
-		})
+	currentUserID, ok := getCurrentUserID(c)
+	if !ok {
 		return
 	}
 
-	media, err := h.service.GetMediaByID(uint(mediaID))
-
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": "Mídia não encontrada",
-		})
+	media, ok := fetchOrNotFound(c, h.service.GetMediaByID, mediaID, "Media not found")
+	if !ok {
 		return
 	}
 
-	if media.OwnerID != currentUserID {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "Acesso negado",
-		})
+	if !requireOwner(c, media.OwnerID, currentUserID) {
 		return
 	}
 
@@ -112,13 +321,11 @@ func (h *MediaHandler) GetStreamURL(c *gin.Context) {
 		claims,
 	)
 
-	signedToken, err := token.SignedString(
-		[]byte(os.Getenv("STREAM_SECRET")),
-	)
+	signedToken, err := token.SignedString(streamSecret)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Erro ao gerar token",
+			"error": "Error generating token",
 		})
 		return
 	}
@@ -147,6 +354,121 @@ func (h *MediaHandler) GetStreamURL(c *gin.Context) {
 		"url": url,
 	})
 }
+
+func (h *MediaHandler) StreamMedia(c *gin.Context) {
+	h.serveMedia(c, false)
+}
+
+func (h *MediaHandler) DownloadMedia(c *gin.Context) {
+	h.serveMedia(c, true)
+}
+
+// GetMedia returns a specific media item by ID
+func (h *MediaHandler) GetMedia(c *gin.Context) {
+	mediaID, ok := parseIDParam(c)
+	if !ok {
+		return
+	}
+
+	media, ok := fetchOrNotFound(c, h.service.GetMediaByID, mediaID, "Media not found")
+	if !ok {
+		return
+	}
+
+	currentUserID, ok := getCurrentUserID(c)
+	if !ok {
+		return
+	}
+
+	if !requireOwner(c, media.OwnerID, currentUserID) {
+		return
+	}
+
+	c.JSON(http.StatusOK, media)
+}
+
+// UpdateMedia updates a media item's metadata
+func (h *MediaHandler) UpdateMedia(c *gin.Context) {
+	mediaID, ok := parseIDParam(c)
+	if !ok {
+		return
+	}
+
+	var updateReq struct {
+		Title string `json:"title"`
+	}
+
+	if err := c.ShouldBindJSON(&updateReq); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data"})
+		return
+	}
+
+	media, ok := fetchOrNotFound(c, h.service.GetMediaByID, mediaID, "Media not found")
+	if !ok {
+		return
+	}
+
+	currentUserID, ok := getCurrentUserID(c)
+	if !ok {
+		return
+	}
+
+	if !requireOwner(c, media.OwnerID, currentUserID) {
+		return
+	}
+
+	// Update fields
+	if updateReq.Title != "" {
+		media.Title = updateReq.Title
+	}
+
+	if err := h.service.UpdateMedia(media); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating media"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Media updated successfully",
+		"media":   media,
+	})
+}
+
+// DeleteMedia deletes a media item and its files
+func (h *MediaHandler) DeleteMedia(c *gin.Context) {
+	mediaID, ok := parseIDParam(c)
+	if !ok {
+		return
+	}
+
+	// Get the media item to verify permissions
+	media, ok := fetchOrNotFound(c, h.service.GetMediaByID, mediaID, "Media not found")
+	if !ok {
+		return
+	}
+
+	currentUserID, ok := getCurrentUserID(c)
+	if !ok {
+		return
+	}
+
+	if !requireOwner(c, media.OwnerID, currentUserID) {
+		return
+	}
+
+	// Delete the media item
+	if err := h.service.DeleteMedia(mediaID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting media"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Media deleted successfully",
+	})
+}
+
+// +-------------------+
+// | GENERAL FUNCTIONS |
+// +-------------------+
 
 func sanitizeFileName(name string) string {
 	replacer := strings.NewReplacer(
@@ -180,13 +502,13 @@ func (h *MediaHandler) serveMedia(
 				return nil, errors.New("método de assinatura inválido")
 			}
 
-			return []byte(os.Getenv("STREAM_SECRET")), nil
+			return streamSecret, nil
 		},
 	)
 
 	if err != nil || !token.Valid {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token inválido ou expirado",
+			"error": "Invalid or expired token",
 		})
 		return
 	}
@@ -195,24 +517,17 @@ func (h *MediaHandler) serveMedia(
 
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Claims inválidas",
+			"error": "Invalid claims",
 		})
 		return
 	}
 
-	media, err := h.service.GetMediaByID(claims.MediaID)
-
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": "Mídia não encontrada",
-		})
+	media, ok := fetchOrNotFound(c, h.service.GetMediaByID, claims.MediaID, "Media not found")
+	if !ok {
 		return
 	}
 
-	if media.OwnerID != claims.UserID {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "Acesso negado",
-		})
+	if !requireOwner(c, media.OwnerID, claims.UserID) {
 		return
 	}
 
@@ -227,7 +542,7 @@ func (h *MediaHandler) serveMedia(
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"error": "Arquivo não encontrado",
+			"error": "File not found",
 		})
 		return
 	}
@@ -238,7 +553,7 @@ func (h *MediaHandler) serveMedia(
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Erro ao obter informações do arquivo",
+			"error": "Error getting file information",
 		})
 		return
 	}
@@ -262,7 +577,7 @@ func (h *MediaHandler) serveMedia(
 
 		title := media.Title
 
-		// Remove a extensão apenas se ela já estiver no título
+		// Remove extension only if it's already on title
 		if strings.HasSuffix(
 			strings.ToLower(title),
 			strings.ToLower(extension),
@@ -294,446 +609,62 @@ func (h *MediaHandler) serveMedia(
 	)
 }
 
-func (h *MediaHandler) StreamMedia(c *gin.Context) {
-	h.serveMedia(c, false)
-}
+// +-----------------+
+// | REQUEST HELPERS |
+// +-----------------+
 
-func (h *MediaHandler) DownloadMedia(c *gin.Context) {
-	h.serveMedia(c, true)
-}
-
-// UploadMedia faz upload de um arquivo de mídia
-func (h *MediaHandler) UploadMedia(c *gin.Context) {
-	userIDInterface := c.MustGet("userID")
-	var userID uint
-
-	switch v := userIDInterface.(type) {
+// getCurrentUserID extracts and normalizes the authenticated user ID
+// stored in the gin context by the auth middleware.
+func getCurrentUserID(c *gin.Context) (uint, bool) {
+	switch v := c.MustGet("userID").(type) {
 	case uint:
-		userID = v
+		return v, true
 	case uint64:
-		userID = uint(v)
+		return uint(v), true
 	case float64:
-		userID = uint(v)
+		return uint(v), true
 	default:
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "ID de usuário inválido"})
-		return
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user ID"})
+		return 0, false
 	}
+}
 
-	// Obtém arquivo do form
-	file, err := c.FormFile("file")
+// parseIDParam parses the ":id" URL param as a uint.
+func parseIDParam(c *gin.Context) (uint, bool) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Arquivo não encontrado"})
-		return
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return 0, false
 	}
+	return uint(id), true
+}
 
-	title := c.PostForm("title")
-	if title == "" {
-		title = file.Filename
+// fetchOrNotFound runs fetch(arg) and responds 404 with notFoundMsg on error.
+func fetchOrNotFound[T any, A any](c *gin.Context, fetch func(A) (T, error), arg A, notFoundMsg string) (T, bool) {
+	value, err := fetch(arg)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": notFoundMsg})
+		return value, false
 	}
+	return value, true
+}
 
-	// Faz upload
-	media, err := h.service.UploadMedia(file, title, userID)
+// fetchOrServerError runs fetch(arg) and responds 500 with err's message on error.
+func fetchOrServerError[T any, A any](c *gin.Context, fetch func(A) (T, error), arg A) (T, bool) {
+	value, err := fetch(arg)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return value, false
 	}
-
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "Mídia enviada com sucesso",
-		"media":   media,
-	})
+	return value, true
 }
 
-// GetMediaFile retorna o arquivo da mídia
-func (h *MediaHandler) GetMediaFile(c *gin.Context) {
-	id := c.Param("id")
-	mediaID, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
-		return
+// requireOwner responds 403 and returns false when ownerID does not match
+// currentUserID.
+func requireOwner(c *gin.Context, ownerID, currentUserID uint) bool {
+	if ownerID != currentUserID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return false
 	}
-
-	media, err := h.service.GetMediaByID(uint(mediaID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Mídia não encontrada"})
-		return
-	}
-
-	// Verifica permissão
-	currentUserIDInterface := c.MustGet("userID")
-	var currentUserID uint
-
-	switch v := currentUserIDInterface.(type) {
-	case uint:
-		currentUserID = v
-	case uint64:
-		currentUserID = uint(v)
-	case float64:
-		currentUserID = uint(v)
-	default:
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "ID de usuário inválido"})
-		return
-	}
-
-	if media.OwnerID != currentUserID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Acesso negado"})
-		return
-	}
-
-	// Obtém o caminho do arquivo
-	fileType := utils.StringToFileType(media.Type)
-	fullPath := utils.GetFullMediaPath(fileType, media.Filename)
-
-	// Serve o arquivo
-	file, err := os.Open(fullPath)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao abrir arquivo"})
-		return
-	}
-	defer file.Close()
-
-	stat, err := file.Stat()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao obter informações do arquivo"})
-		return
-	}
-
-	c.Header("Content-Disposition", "inline; filename=\""+media.Filename+"\"")
-	c.Header("Accept-Ranges", "bytes")
-	contentType := mime.TypeByExtension(filepath.Ext(media.Filename))
-	if contentType == "" {
-		contentType = "application/octet-stream"
-	}
-
-	c.Header("Content-Type", contentType)
-
-	http.ServeContent(
-		c.Writer,
-		c.Request,
-		media.Filename,
-		stat.ModTime(),
-		file,
-	)
-}
-
-// GetMedia retorna uma mídia específica pelo ID
-func (h *MediaHandler) GetMedia(c *gin.Context) {
-	id := c.Param("id")
-	mediaID, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
-		return
-	}
-
-	media, err := h.service.GetMediaByID(uint(mediaID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Mídia não encontrada"})
-		return
-	}
-
-	// Verifica permissão
-	currentUserIDInterface := c.MustGet("userID")
-	var currentUserID uint
-
-	switch v := currentUserIDInterface.(type) {
-	case uint:
-		currentUserID = v
-	case uint64:
-		currentUserID = uint(v)
-	case float64:
-		currentUserID = uint(v)
-	default:
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "ID de usuário inválido"})
-		return
-	}
-
-	if media.OwnerID != currentUserID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Acesso negado"})
-		return
-	}
-
-	c.JSON(http.StatusOK, media)
-}
-
-// GetMediaByOwner retorna todas as mídias de um proprietário
-func (h *MediaHandler) GetMediaByOwner(c *gin.Context) {
-	// Verifica se o usuário está tentando acessar mídias de outro usuário
-	currentUserIDInterface := c.MustGet("userID")
-	var currentUserID uint
-
-	switch v := currentUserIDInterface.(type) {
-	case uint:
-		currentUserID = v
-	case uint64:
-		currentUserID = uint(v)
-	case float64:
-		currentUserID = uint(v)
-	default:
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "ID de usuário inválido"})
-		return
-	}
-
-	medias, err := h.service.GetMediaByOwner(currentUserID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"medias": medias,
-	})
-}
-
-// UpdateMedia atualiza os dados de uma mídia
-func (h *MediaHandler) UpdateMedia(c *gin.Context) {
-	id := c.Param("id")
-	mediaID, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
-		return
-	}
-
-	var updateReq struct {
-		Title string `json:"title"`
-	}
-
-	if err := c.ShouldBindJSON(&updateReq); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Dados inválidos"})
-		return
-	}
-
-	media, err := h.service.GetMediaByID(uint(mediaID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Mídia não encontrada"})
-		return
-	}
-
-	// Verifica se o usuário é o proprietário
-	currentUserIDInterface := c.MustGet("userID")
-	var currentUserID uint
-
-	switch v := currentUserIDInterface.(type) {
-	case uint:
-		currentUserID = v
-	case uint64:
-		currentUserID = uint(v)
-	case float64:
-		currentUserID = uint(v)
-	default:
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "ID de usuário inválido"})
-		return
-	}
-
-	if media.OwnerID != currentUserID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Acesso negado"})
-		return
-	}
-
-	// Atualiza dados
-	if updateReq.Title != "" {
-		media.Title = updateReq.Title
-	}
-
-	if err := h.service.UpdateMedia(media); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar mídia"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Mídia atualizada com sucesso",
-		"media":   media,
-	})
-}
-
-// DeleteMedia deleta uma mídia e seus arquivos
-func (h *MediaHandler) DeleteMedia(c *gin.Context) {
-	id := c.Param("id")
-	mediaID, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
-		return
-	}
-
-	// Obtém a mídia para verificar permissões
-	media, err := h.service.GetMediaByID(uint(mediaID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Mídia não encontrada"})
-		return
-	}
-
-	// Verifica se o usuário é o proprietário
-	currentUserIDInterface := c.MustGet("userID")
-	var currentUserID uint
-
-	switch v := currentUserIDInterface.(type) {
-	case uint:
-		currentUserID = v
-	case uint64:
-		currentUserID = uint(v)
-	case float64:
-		currentUserID = uint(v)
-	default:
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "ID de usuário inválido"})
-		return
-	}
-
-	if media.OwnerID != currentUserID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Acesso negado"})
-		return
-	}
-
-	// Deleta a mídia
-	if err := h.service.DeleteMedia(uint(mediaID)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao deletar mídia"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Mídia deletada com sucesso",
-	})
-}
-
-// GetMediaWithMissingThumbnails retorna mídias sem thumbnail
-func (h *MediaHandler) GetMediaWithMissingThumbnails(c *gin.Context) {
-	// Verifica se o usuário está tentando acessar mídias de outro usuário
-	currentUserIDInterface := c.MustGet("userID")
-	var currentUserID uint
-
-	switch v := currentUserIDInterface.(type) {
-	case uint:
-		currentUserID = v
-	case uint64:
-		currentUserID = uint(v)
-	case float64:
-		currentUserID = uint(v)
-	default:
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "ID de usuário inválido"})
-		return
-	}
-
-	medias, err := h.service.GetMediaByOwner(currentUserID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Filtra apenas as mídias sem thumbnail
-	var missingThumbnails []interface{}
-	for _, media := range medias {
-		if media.Thumbnail == "" && (media.Type == "image" || media.Type == "video") {
-			missingThumbnails = append(missingThumbnails, gin.H{
-				"ID":       media.ID,
-				"Title":    media.Title,
-				"Type":     media.Type,
-				"Filename": media.Filename,
-				"MimeType": media.MimeType,
-			})
-		}
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"count":  len(missingThumbnails),
-		"medias": missingThumbnails,
-	})
-}
-
-// GenerateThumbnail gera thumbnail para uma mídia específica usando a API externa
-func (h *MediaHandler) GenerateThumbnail(c *gin.Context) {
-	id := c.Param("id")
-	mediaID, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
-		return
-	}
-
-	media, err := h.service.GetMediaByID(uint(mediaID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Mídia não encontrada"})
-		return
-	}
-
-	// Verifica se o usuário é o proprietário
-	currentUserIDInterface := c.MustGet("userID")
-	var currentUserID uint
-
-	switch v := currentUserIDInterface.(type) {
-	case uint:
-		currentUserID = v
-	case uint64:
-		currentUserID = uint(v)
-	case float64:
-		currentUserID = uint(v)
-	default:
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "ID de usuário inválido"})
-		return
-	}
-
-	if media.OwnerID != currentUserID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Acesso negado"})
-		return
-	}
-
-	// Tenta gerar o thumbnail através da API de thumbnail
-	thumbnailName, err := h.service.GenerateThumbnailViaAPI(media)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Erro ao gerar thumbnail: %v", err)})
-		return
-	}
-
-	// Atualiza o registro da mídia com o novo thumbnail
-	media.Thumbnail = thumbnailName
-	if err := h.service.UpdateMedia(media); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar mídia"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message":   "Thumbnail gerado com sucesso",
-		"thumbnail": thumbnailName,
-	})
-}
-
-func (h *MediaHandler) DeleteThumbnail(c *gin.Context) {
-	id := c.Param("id")
-	mediaID, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
-		return
-	}
-
-	media, err := h.service.GetMediaByID(uint(mediaID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Mídia não encontrada"})
-		return
-	}
-
-	// Verifica se o usuário é o proprietário
-	currentUserIDInterface := c.MustGet("userID")
-	var currentUserID uint
-
-	switch v := currentUserIDInterface.(type) {
-	case uint:
-		currentUserID = v
-	case uint64:
-		currentUserID = uint(v)
-	case float64:
-		currentUserID = uint(v)
-	default:
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "ID de usuário inválido"})
-		return
-	}
-
-	if media.OwnerID != currentUserID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Acesso negado"})
-		return
-	}
-
-	if err := h.service.DeleteThumbnail(uint(mediaID)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Erro ao deletar thumbnail: %v", err)})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Thumbnail deletado com sucesso",
-	})
+	return true
 }

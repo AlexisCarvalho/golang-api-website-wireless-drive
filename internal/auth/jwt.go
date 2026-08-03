@@ -1,13 +1,23 @@
 package auth
 
 import (
-	"os"
+	"log"
 	"time"
+	"wireless_drive/internal/config"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+var jwtSecret = mustLoadJWTSecret()
+
+// mustLoadJWTSecret loads JWT_SECRET from the environment.
+func mustLoadJWTSecret() []byte {
+	secret := config.GetEnv("JWT_SECRET", "")
+	if secret == "" {
+		log.Fatal("JWT_SECRET is not configured")
+	}
+	return []byte(secret)
+}
 
 type Claims struct {
 	UserID uint `json:"user_id"`

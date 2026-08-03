@@ -34,7 +34,7 @@ func (h *UserHandler) VerifyAuthenticated(c *gin.Context) {
 	userID := c.MustGet("userID").(uint)
 
 	c.JSON(200, gin.H{
-		"message": "Usuário autenticado",
+		"message": "User authenticated",
 		"userID":  userID,
 	})
 }
@@ -61,19 +61,19 @@ func (h *UserHandler) Login(c *gin.Context) {
 	}
 
 	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Dados inválidos"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data"})
 		return
 	}
 
 	user := h.service.Authenticate(req.Code, req.Password)
 	if user == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Credenciais inválidas"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
 	token, err := auth.GenerateJWT(user.ID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao gerar token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error generating token"})
 		return
 	}
 

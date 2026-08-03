@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"io/fs"
+	"log"
 	"net/http"
 	"path/filepath"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"wireless_drive/internal/model"
 	"wireless_drive/internal/repository"
 	service "wireless_drive/internal/service"
+	"wireless_drive/internal/utils"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -28,7 +30,11 @@ func main() {
 	// =========================
 	// INITIAL CONFIGURATION
 	// =========================
-	config.LoadEnv()
+
+	if err := utils.EnsureAllDirs(); err != nil {
+		log.Fatalf("failed to initialize storage directories: %v", err)
+	}
+
 	config.ConnectDB()
 
 	config.DB.AutoMigrate(&model.User{}, &model.Media{})
@@ -38,7 +44,7 @@ func main() {
 	// =========================
 	r := gin.Default()
 
-	// CORS PRIMEIRO e MÁXIMO PERMISSIVO (antes de qualquer rota ou middleware)
+	// CORS first and as permissive as possible (before any route or middleware)
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
 	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
@@ -61,7 +67,7 @@ func main() {
 	// Static Files (JS, CSS, assets...)
 	r.StaticFS("/static", http.FS(subFS))
 
-	// Serve thumbnails from disk - considera BASE_PATH
+	// Serve thumbnails from disk - considers BASE_PATH
 	basePath := config.GetEnv("BASE_PATH", ".")
 	thumbsDir := config.GetEnv("THUMBS_DIR", "thumbs")
 	thumbsPath := filepath.Join(basePath, thumbsDir)
@@ -115,5 +121,5 @@ func main() {
 	// =========================
 	// START SERVER
 	// =========================
-	r.Run(":8085")
+	r.Run(":" + config.GetEnv("PORT", "8085"))
 }
