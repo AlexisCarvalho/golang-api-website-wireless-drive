@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-	"strings"
 	"wireless_drive/internal/config"
 )
 
@@ -132,9 +131,7 @@ func GenerateThumbnailViaExternalAPI(fileType FileType, filename string) (string
 		}
 
 		if string(fileType) == "video" {
-			parts := strings.Split(videoThumbnailTimestamp, ":")
-			seconds := parts[2]
-			if err := writer.WriteField("second", seconds); err != nil {
+			if err := writer.WriteField("thumbnailTimestamp", videoThumbnailTimestamp); err != nil {
 				pw.CloseWithError(err)
 				return
 			}

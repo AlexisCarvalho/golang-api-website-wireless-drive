@@ -258,6 +258,77 @@
       transform: translateY(-1px);
     }
 
+    /* Search Box */
+    .search-box {
+      position: relative;
+      flex: 1 1 240px;
+      min-width: 200px;
+      max-width: 360px;
+    }
+
+    .search-box .search-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      pointer-events: none;
+      z-index: 2;
+      line-height: 1;
+    }
+
+    .search-box input {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      padding: 16px 18px 16px 46px;
+      background: rgba(28, 24, 37, 0.9);
+      backdrop-filter: blur(10px);
+      color: var(--text-primary);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .search-box input::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.7;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.15), 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .search-box .search-clear {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 6px;
+      display: none;
+    }
+
+    .search-box .search-clear:hover {
+      color: var(--text-primary);
+    }
+
+    .search-box.has-value .search-clear {
+      display: block;
+    }
+
     /* Gallery Grid */
     #gallery {
       display: grid;
@@ -871,6 +942,11 @@
       <button id="generateThumbnailsBtn">
         <span>🖼️</span> Gerar Thumbnails
       </button>
+      <div class="search-box" id="searchBox">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Pesquisar mídias..." autocomplete="off">
+        <button type="button" class="search-clear" id="searchClear" aria-label="Limpar pesquisa">✕</button>
+      </div>
     </section>
 
     <section id="gallery" class="grid"></section>
@@ -970,6 +1046,7 @@
     // Sort mode state
     var sortMode = 'date'; // 'date', 'asc', 'desc'
     var allMedias = []; // Store all medias for sorting without API calls
+    var searchQuery = ''; // Current search filter (case-insensitive, by title)
 
     // Function to sort medias based on current sort mode
     function sortMedias(medias) {
@@ -989,6 +1066,28 @@
             return new Date(b.CreatedAt) - new Date(a.CreatedAt);
           });
       }
+    }
+
+    // Filters medias by title using the current search query
+    function filterMedias(medias) {
+      if (!searchQuery) return medias;
+      var q = searchQuery.toLowerCase();
+      return medias.filter(function(media) {
+        return media.Title && media.Title.toLowerCase().indexOf(q) !== -1;
+      });
+    }
+
+    // Applies the current search filter and sort mode, then re-renders the gallery
+    function applyFiltersAndRender() {
+      var filtered = filterMedias(allMedias);
+      var sorted = sortMedias(filtered);
+
+      if (allMedias.length > 0 && filtered.length === 0) {
+        gallery.innerHTML = '<p>Nenhuma mídia encontrada para "' + searchQuery + '".</p>';
+        return;
+      }
+
+      renderMedias(sorted);
     }
 
     // Render medias to gallery from sorted array
@@ -1065,9 +1164,8 @@
           if (data.medias && data.medias.length > 0) {
             // Store all medias
             allMedias = data.medias;
-            // Sort and render
-            var sorted = sortMedias(allMedias);
-            renderMedias(sorted);
+            // Filter (if searching), sort and render
+            applyFiltersAndRender();
           } else {
             gallery.innerHTML = '<p>Sem mídias ainda. Faça um <a href="/website/upload">upload</a>.</p>';
           }
@@ -1619,13 +1717,35 @@
           }
 
           updateSortButtonText();
-          // Reorder without API call
+          // Reorder without API call, keeping the active search filter
           if (allMedias.length > 0) {
-            var sorted = sortMedias(allMedias);
-            renderMedias(sorted);
+            applyFiltersAndRender();
           }
         });
 
+      }
+
+      // Search handler
+      var searchInput = document.getElementById('searchInput');
+      var searchBox = document.getElementById('searchBox');
+      var searchClear = document.getElementById('searchClear');
+
+      if (searchInput) {
+        searchInput.addEventListener('input', function() {
+          searchQuery = searchInput.value.trim();
+          searchBox.classList.toggle('has-value', searchQuery.length > 0);
+          applyFiltersAndRender();
+        });
+      }
+
+      if (searchClear) {
+        searchClear.addEventListener('click', function() {
+          searchQuery = '';
+          searchInput.value = '';
+          searchBox.classList.remove('has-value');
+          searchInput.focus();
+          applyFiltersAndRender();
+        });
       }
     })();
 

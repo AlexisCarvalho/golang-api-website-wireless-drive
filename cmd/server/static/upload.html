@@ -975,7 +975,19 @@
     }
 
     function handleFiles(files) {
-      selectedFiles = Array.from(files);
+      const newFiles = Array.from(files);
+
+      newFiles.forEach((file) => {
+        const alreadySelected = selectedFiles.some((existing) =>
+          existing.name === file.name &&
+          existing.size === file.size &&
+          existing.lastModified === file.lastModified
+        );
+        if (!alreadySelected) {
+          selectedFiles.push(file);
+        }
+      });
+
       renderFilesList();
     }
 
@@ -1281,6 +1293,11 @@
             const percent = Math.round((event.loaded / event.total) * 100);
             barEl.style.width = percent + '%';
             percentEl.textContent = percent + '%';
+
+            if (percent >= 100) {
+              statusEl.textContent = 'Gerando Thumbnail 🖼️';
+              statusEl.className = 'progress-status';
+            }
           }
         });
 
