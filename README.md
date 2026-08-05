@@ -27,9 +27,13 @@ search TEXT
 ```
 ````
 
+> Android App: https://github.com/AlexisCarvalho/android-wireless-drive
+
 There's also a companion **Android App** that uses this same API to browse your stored media more efficiently on smartphones.
 
-> Android App: https://github.com/AlexisCarvalho/android-wireless-drive
+> Thumbnail API: https://github.com/AlexisCarvalho/golang-wireless-drive-fallback-thumbnail-api
+
+Here, the Thumbnail API is only used for very specific purposes: as a fallback when FFmpeg is not available on the system running the server.
 
 ### `auto_deploy.py`
 
@@ -45,10 +49,10 @@ It's meant to replace the manual, step-by-step process for everyday use. The man
 - [Configuration](#configuration)
 - [Running the API on PC](#running-the-api-on-pc)
 - [Running the API on Android (via ADB)](#running-the-api-on-android-via-adb)
-  - [Checking the Target Phone's Architecture](#checking-the-target-phones-architecture)
   - [Automated Deployment (auto_deploy.py)](#automated-deployment-auto_deploypy)
   - [Manual Deployment](#manual-deployment)
     - [Requirements](#requirements)
+    - [Checking the Target Phone's Architecture](#checking-the-target-phones-architecture)
     - [Building FFmpeg for Android](#building-ffmpeg-for-android)
     - [Building the Go Server](#building-the-go-server)
     - [Installing on the Android Device](#installing-on-the-android-device)
