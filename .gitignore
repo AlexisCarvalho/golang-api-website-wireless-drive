@@ -9,8 +9,9 @@ ztemp/
 *.test
 /uploads
 /thumbs
-TODO.md
-wireless_drive.db
+/wireless_drive.db
+FFmpeg/
+/server
 
 # Output folders
 bin/
@@ -52,7 +53,8 @@ Thumbs.db
 *.key
 *.pem
 *.secret
-TODO.md
+/TODO.md
+/README.pdf
 
 # Logs and runtime files
 *.log
