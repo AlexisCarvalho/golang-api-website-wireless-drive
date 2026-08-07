@@ -45,18 +45,35 @@ It's meant to replace the manual, step-by-step process for everyday use. The man
 
 ## Table of Contents
 
-- [Accessing the Server from Other Devices](#accessing-the-server-from-other-devices)
-- [Configuration](#configuration)
-- [Running the API on PC](#running-the-api-on-pc)
-- [Running the API on Android (via ADB)](#running-the-api-on-android-via-adb)
-  - [Automated Deployment (auto_deploy.py)](#automated-deployment-auto_deploypy)
-  - [Manual Deployment](#manual-deployment)
-    - [Requirements](#requirements)
-    - [Checking the Target Phone's Architecture](#checking-the-target-phones-architecture)
-    - [Building FFmpeg for Android](#building-ffmpeg-for-android)
-    - [Building the Go Server](#building-the-go-server)
-    - [Installing on the Android Device](#installing-on-the-android-device)
-    - [Running the Server](#running-the-server)
+- [Wireless Drive](#wireless-drive)
+    - [Check Related Repositories](#check-related-repositories)
+    - [`auto_deploy.py`](#auto_deploypy)
+  - [Table of Contents](#table-of-contents)
+  - [Accessing the Server from Other Devices](#accessing-the-server-from-other-devices)
+  - [Configuration](#configuration)
+    - [Configuration Reference](#configuration-reference)
+  - [Running the API on PC](#running-the-api-on-pc)
+    - [Build](#build)
+    - [Run](#run)
+  - [Running the API on Android (via ADB)](#running-the-api-on-android-via-adb)
+    - [How Old Can My Smartphone Be?](#how-old-can-my-smartphone-be)
+      - [Network](#network)
+      - [Architecture](#architecture)
+    - [Automated Deployment (`auto_deploy.py`)](#automated-deployment-auto_deploypy)
+      - [What you still need to set up yourself](#what-you-still-need-to-set-up-yourself)
+    - [Manual Deployment](#manual-deployment)
+      - [Requirements](#requirements)
+      - [Checking the Target Phone's Architecture](#checking-the-target-phones-architecture)
+      - [Building FFmpeg for Android](#building-ffmpeg-for-android)
+        - [1. Get the NDK](#1-get-the-ndk)
+        - [2. Clone FFmpeg](#2-clone-ffmpeg)
+        - [3. Configure the Android NDK toolchain](#3-configure-the-android-ndk-toolchain)
+        - [4. Configure FFmpeg](#4-configure-ffmpeg)
+        - [5. Build FFmpeg](#5-build-ffmpeg)
+      - [Building the Go Server](#building-the-go-server)
+      - [Installing on the Android Device](#installing-on-the-android-device)
+      - [Running the Server](#running-the-server)
+      - [Getting the Local IP Address](#getting-the-local-ip-address)
 
 ---
 
@@ -116,18 +133,18 @@ THUMBNAIL_API_URL=http://192.168.0.162:8086
 
 ### Configuration Reference
 
-| Variable | Required | Description |
-|----------|:--------:|-------------|
-| `JWT_SECRET` | ✅ | Secret used to sign user authentication tokens. |
-| `STREAM_SECRET` | ✅ | 	Secret used to sign temporary media streaming URLs. |
-| `BASE_PATH` | ✅ | Root directory where Wireless Drive stores all uploaded files and generated thumbnails. |
-| `UPLOADS_DIR` | ❌ | Upload directory relative to `BASE_PATH`. Defaults to `uploads`. |
-| `THUMBS_DIR` | ❌ | Thumbnail directory relative to `BASE_PATH`. Defaults to `thumbs`. |
-| `FFMPEG_PATH` | ❌ | Path to the ffmpeg executable. If not set, thumbnails will not be generated locally. |
-| `FFPROBE_PATH` | ❌ | Path to the ffprobe executable. If not set, thumbnails will not be generated locally. |
-| `THUMBNAIL_API_URL` | ❌ | External Thumbnail API URL used when FFmpeg is unavailable or not configured on the server. If none of these are set (`FFMPEG_PATH` and `FFPROBE_PATH`) for local, or (`THUMBNAIL_API_URL`) for external, the server will still work, but no thumbnails will be generated. |
-| `DB_NAME` | ❌ | SQLite database filename. Defaults to `wireless_drive.db`. |
-| `PORT` | ❌ | HTTP server port. Defaults to `8085`. |
+| Variable            | Required | Description                                                                                                                                                                                                                                                                |
+| ------------------- | :------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `JWT_SECRET`        |    ✅     | Secret used to sign user authentication tokens.                                                                                                                                                                                                                            |
+| `STREAM_SECRET`     |    ✅     | Secret used to sign temporary media streaming URLs.                                                                                                                                                                                                                        |
+| `BASE_PATH`         |    ✅     | Root directory where Wireless Drive stores all uploaded files and generated thumbnails.                                                                                                                                                                                    |
+| `UPLOADS_DIR`       |    ❌     | Upload directory relative to `BASE_PATH`. Defaults to `uploads`.                                                                                                                                                                                                           |
+| `THUMBS_DIR`        |    ❌     | Thumbnail directory relative to `BASE_PATH`. Defaults to `thumbs`.                                                                                                                                                                                                         |
+| `FFMPEG_PATH`       |    ❌     | Path to the ffmpeg executable. If not set, thumbnails will not be generated locally.                                                                                                                                                                                       |
+| `FFPROBE_PATH`      |    ❌     | Path to the ffprobe executable. If not set, thumbnails will not be generated locally.                                                                                                                                                                                      |
+| `THUMBNAIL_API_URL` |    ❌     | External Thumbnail API URL used when FFmpeg is unavailable or not configured on the server. If none of these are set (`FFMPEG_PATH` and `FFPROBE_PATH`) for local, or (`THUMBNAIL_API_URL`) for external, the server will still work, but no thumbnails will be generated. |
+| `DB_NAME`           |    ❌     | SQLite database filename. Defaults to `wireless_drive.db`.                                                                                                                                                                                                                 |
+| `PORT`              |    ❌     | HTTP server port. Defaults to `8085`.                                                                                                                                                                                                                                      |
 
 ---
 
@@ -153,6 +170,42 @@ Running the server on an old Android phone lets you repurpose it as dedicated lo
 
 You can either let [`auto_deploy.py`](#automated-deployment-auto_deploypy) handle the whole process, or follow the [manual steps](#manual-deployment) yourself — both end up doing the same thing, so pick whichever fits your workflow. The manual steps are entirely optional if the script works for you.
 
+### How Old Can My Smartphone Be?
+
+#### Network
+
+For the best experience, the device should support **LTE Cat 4 (150 Mbps download / 50 Mbps upload)** or better. This is more than enough to stream **1080p 60 FPS** to multiple devices over a local network or one **4K 60 FPS** at time if it's not with high bitrate.
+
+The table below shows the recommended network bandwidth for different streaming qualities.
+
+> **Note:** These values refer to the device's local network throughput, **not** your internet connection. Since streaming happens over the local network, the limiting factors are the phone's hardware (CPU, storage, Wi-Fi chipset, etc.) and, in some cases, the router.
+>
+> If both your phone and router support it, make sure the device is connected to the **5 GHz Wi-Fi** network instead of **2.4 GHz**. The 5 GHz band typically provides significantly higher throughput and lower interference, resulting in smoother streaming, especially for high-bitrate 4K videos.
+>
+> **Typical Wi-Fi throughput:**
+> - **2.4 GHz:** 50–100 Mbps
+> - **5 GHz:** 200–350 Mbps (common on most Wi-Fi 5 capable phones)
+
+| Required Upload Speed (One Screen) | Resolution |              FPS               | Recommended Bitrate |
+| ---------------------------------: | ---------- | :----------------------------: | ------------------: |
+|                             1 Mbps | 480p       |               30               |            0.8 Mbps |
+|                             2 Mbps | 480p       |               60               |            1.5 Mbps |
+|                             3 Mbps | 720p       |               30               |            2.5 Mbps |
+|                             5 Mbps | 720p       |               60               |              4 Mbps |
+|                             8 Mbps | 1080p      |               30               |              6 Mbps |
+|                            12 Mbps | 1080p      |               60               |             10 Mbps |
+|                            18 Mbps | 1440p      |               30               |             15 Mbps |
+|                            25 Mbps | 1440p      |               60               |             20 Mbps |
+|                            25 Mbps | 4K         |               30               |             20 Mbps |
+|                            40 Mbps | 4K         |               60               |             35 Mbps |
+|                            60 Mbps | 4K         |       60 (High Quality)        |             50 Mbps |
+|                           100 Mbps | 4K HDR     |               60               |             80 Mbps |
+|                          150+ Mbps | 4K HDR     | 60 (Virtually No Restrictions) |            120 Mbps |
+
+#### Architecture
+
+See the section **[Checking the Target Phone's Architecture](#checking-the-target-phones-architecture)** to determine whether your device is compatible.
+
 ### Automated Deployment (`auto_deploy.py`)
 
 `auto_deploy.py` lives at the root of this repository, next to `go.mod`. Running it (`python3 auto_deploy.py`) does the following, in order:
@@ -176,15 +229,15 @@ If you opt into step 9, the script:
 
 #### What you still need to set up yourself
 
-| Item | Required for `auto_deploy.py`? | Notes |
-|---|:---:|---|
-| Android NDK r29 | ✅ Always | Set the `ANDROID_NDK` environment variable, or place it at `~/android-ndk-r29` (the script's default). Needed even if you skip the FFmpeg step, since the Go server itself is cross-compiled with CGO. |
-| Go | ✅ Always | Must be in `PATH`. |
-| `adb` / platform-tools | ✅ Always | Must be in `PATH`, with the phone connected and authorized (USB debugging enabled — see [Requirements](#requirements)). |
-| `.env` file | ✅ Recommended | Not created by the script — you must write it yourself beforehand (see [Configuration](#configuration)). Without it, the server can still start, but without your storage path, secrets, or FFmpeg/thumbnail settings configured. |
-| FFmpeg/FFprobe build | ❌ Optional | Purely opt-in prompt. Skipping it just means no native thumbnail generation on-device — see [Building FFmpeg for Android](#building-ffmpeg-for-android) for what that means and your fallback options. |
-| `git` | ❌ Optional | Only needed if you want the script to auto-clone FFmpeg for you when the `FFmpeg/` folder doesn't already exist. |
-| `make` | ❌ Optional | Only needed if you opt into building FFmpeg/FFprobe. |
+| Item                   | Required for `auto_deploy.py`? | Notes                                                                                                                                                                                                                             |
+| ---------------------- | :----------------------------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Android NDK r29        |            ✅ Always            | Set the `ANDROID_NDK` environment variable, or place it at `~/android-ndk-r29` (the script's default). Needed even if you skip the FFmpeg step, since the Go server itself is cross-compiled with CGO.                            |
+| Go                     |            ✅ Always            | Must be in `PATH`.                                                                                                                                                                                                                |
+| `adb` / platform-tools |            ✅ Always            | Must be in `PATH`, with the phone connected and authorized (USB debugging enabled — see [Requirements](#requirements)).                                                                                                           |
+| `.env` file            |         ✅ Recommended          | Not created by the script — you must write it yourself beforehand (see [Configuration](#configuration)). Without it, the server can still start, but without your storage path, secrets, or FFmpeg/thumbnail settings configured. |
+| FFmpeg/FFprobe build   |           ❌ Optional           | Purely opt-in prompt. Skipping it just means no native thumbnail generation on-device — see [Building FFmpeg for Android](#building-ffmpeg-for-android) for what that means and your fallback options.                            |
+| `git`                  |           ❌ Optional           | Only needed if you want the script to auto-clone FFmpeg for you when the `FFmpeg/` folder doesn't already exist.                                                                                                                  |
+| `make`                 |           ❌ Optional           | Only needed if you opt into building FFmpeg/FFprobe.                                                                                                                                                                              |
 
 Re-run the script whenever you switch to a different phone/architecture, or the very first time you set one up — it rebuilds both the server and (if you opt in) FFmpeg/FFprobe for whichever device is currently connected.
 
@@ -228,12 +281,12 @@ adb shell getprop ro.product.cpu.abi
 
 This prints the phone's primary ABI (e.g. `arm64-v8a`). Use the table below to map it to the correct build flags:
 
-| `ro.product.cpu.abi` | Go `GOARCH` | NDK Clang target (API 21) |
-|---|---|---|
-| `arm64-v8a` | `arm64` | `aarch64-linux-android21-clang` |
-| `armeabi-v7a` | `arm` | `armv7a-linux-androideabi21-clang` |
-| `x86_64` | `amd64` | `x86_64-linux-android21-clang` |
-| `x86` | `386` | `i686-linux-android21-clang` |
+| `ro.product.cpu.abi` | Go `GOARCH` | NDK Clang target (API 21)          |
+| -------------------- | ----------- | ---------------------------------- |
+| `arm64-v8a`          | `arm64`     | `aarch64-linux-android21-clang`    |
+| `armeabi-v7a`        | `arm`       | `armv7a-linux-androideabi21-clang` |
+| `x86_64`             | `amd64`     | `x86_64-linux-android21-clang`     |
+| `x86`                | `386`       | `i686-linux-android21-clang`       |
 
 If your phone reports anything other than `arm64-v8a`, substitute the corresponding `GOARCH` value and Clang target in the [Building FFmpeg for Android](#building-ffmpeg-for-android) and [Building the Go Server](#building-the-go-server) steps below — everywhere `aarch64`, `arm64`, or `aarch64-linux-android21-clang` appears.
 
@@ -422,3 +475,29 @@ If both commands print their version information, FFmpeg and FFprobe are correct
 adb shell nohup /data/local/tmp/wirelessDrive/WirelessDrive >/dev/null 2>&1 &
 disown
 ```
+
+#### Getting the Local IP Address
+
+Run the following command:
+
+```bash
+adb shell ip route get 1.1.1.1
+```
+
+The output will look similar to this:
+
+```text
+1.1.1.1 via 192.168.0.1 dev wlan0 src 192.168.0.236 uid 2000
+```
+
+Use the IP address that appears after `src` (for example, `192.168.0.236`).
+
+You can now access the web interface from any device on the same local network by opening:
+
+```text
+http://192.168.0.236:8085
+```
+
+Replace `8085` with the port configured in your `.env` file if you changed it.
+
+The same IP address should also be used when configuring the Obsidian plugin or the Android app to connect to the server.

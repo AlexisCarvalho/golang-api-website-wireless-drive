@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -447,3 +448,51 @@ if ask_yes_no("Build and deploy FFmpeg/ffprobe now?"):
     deploy_ffmpeg()
 else:
     log("INFO", "Skipping FFmpeg/ffprobe deployment.", YELLOW)
+
+
+# ==========================
+# DEVICE LOCAL IP
+# ==========================
+
+def get_device_ip():
+    """Best-effort lookup of the device's local network IP.
+
+    Tries `ip route get` first (works regardless of interface name, e.g.
+    wlan0 vs eth0), falling back to scanning `ip addr` for a private IPv4.
+    """
+
+    try:
+        result = adb(
+            ["shell", "ip", "route", "get", "1.1.1.1"],
+            capture=True,
+        )
+        match = re.search(r"src\s+(\d+\.\d+\.\d+\.\d+)", result.stdout)
+        if match:
+            return match.group(1)
+    except subprocess.CalledProcessError:
+        pass
+
+    try:
+        result = adb(
+            ["shell", "ip", "-f", "inet", "addr", "show"],
+            capture=True,
+        )
+        for match in re.finditer(r"inet\s+(\d+\.\d+\.\d+\.\d+)/\d+", result.stdout):
+            ip = match.group(1)
+            if not ip.startswith("127."):
+                return ip
+    except subprocess.CalledProcessError:
+        pass
+
+    return None
+
+
+print()
+log("INFO", "Looking up device IP on the local network...", BLUE)
+
+device_ip = get_device_ip()
+
+if device_ip:
+    log("INFO", f"Device local IP: {device_ip}", GREEN)
+else:
+    log("WARN", "Could not determine the device's local IP.", YELLOW)
