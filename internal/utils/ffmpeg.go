@@ -38,13 +38,15 @@ var (
 func GenerateImageThumbnail(inputPath, outputPath string) error {
 	cmd := exec.Command(ffmpegPath,
 		"-i", inputPath,
+		"-frames:v", "1",
 		"-vf", fmt.Sprintf("scale=%d:%d:force_original_aspect_ratio=decrease", thumbnailWidth, thumbnailHeight),
 		"-y", // Overwrite output file
 		outputPath,
 	)
 
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("error generating image thumbnail: %w", err)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error generating image thumbnail: %w; ffmpeg output: %s", err, string(output))
 	}
 
 	return nil
@@ -61,8 +63,9 @@ func GenerateVideoThumbnail(inputPath, outputPath string) error {
 		outputPath,
 	)
 
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("error generating video thumbnail: %w", err)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error generating video thumbnail: %w; ffmpeg output: %s", err, string(output))
 	}
 
 	return nil

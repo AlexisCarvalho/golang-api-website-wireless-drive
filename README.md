@@ -10,7 +10,11 @@ It's primarily designed to work alongside the **Obsidian Plugin**, allowing you 
 >
 > The server itself barely uses any battery, so it should last at least a week on a single charge — in my own testing, that's been the case with a Samsung Galaxy J4. It also uses very little RAM, so even old, low-spec phones will run it comfortably. The same holds true for thumbnail generation with FFmpeg, which handles heavy videos and images without issue.
 
-### Check Related Repositories
+### Check Related Repositories and Youtube Demonstration Video
+> Youtube Demonstration Video: https://www.youtube.com/watch?v=8p6oRKPJumo&t
+
+In the video you can see how the project performs on a Moto E6 Plus.
+
 > Obsidian Plugin: https://github.com/AlexisCarvalho/obsidian-plugin-wireless-drive
 
 As mentioned above, this is used to open media from this API across all vaults; you only need to call the Markdown Code Block Processor.
@@ -46,7 +50,7 @@ It's meant to replace the manual, step-by-step process for everyday use. The man
 ## Table of Contents
 
 - [Wireless Drive](#wireless-drive)
-    - [Check Related Repositories](#check-related-repositories)
+    - [Check Related Repositories and Youtube Demonstration Video](#check-related-repositories-and-youtube-demonstration-video)
     - [`auto_deploy.py`](#auto_deploypy)
   - [Table of Contents](#table-of-contents)
   - [Accessing the Server from Other Devices](#accessing-the-server-from-other-devices)
@@ -345,9 +349,7 @@ The configuration below builds a minimal FFmpeg containing only the components W
     \
     --disable-shared \
     --enable-static \
-    \
-    --disable-everything \
-    \
+  
     --enable-ffmpeg \
     --enable-ffprobe \
     --disable-ffplay \
@@ -364,6 +366,7 @@ The configuration below builds a minimal FFmpeg containing only the components W
     --enable-demuxer=avi \
     --enable-demuxer=image2 \
     --enable-demuxer=webm_dash_manifest \
+    --enable-demuxer=gif \
     \
     --enable-muxer=image2 \
     \

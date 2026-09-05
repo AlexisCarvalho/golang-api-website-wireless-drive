@@ -167,7 +167,7 @@ func (s *mediaService) GenerateThumbnail(fileType utils.FileType, filename, full
 	}
 
 	thumbnailName := utils.GenerateThumbnailName(filename)
-	if utils.IsFFmpegInstalled() && utils.IsFFprobeInstalled() {
+	if utils.IsFFmpegInstalled() {
 
 		thumbPath := utils.GetFullThumbPath(thumbnailName)
 		var err error
@@ -180,6 +180,7 @@ func (s *mediaService) GenerateThumbnail(fileType utils.FileType, filename, full
 
 		if err != nil {
 			fmt.Printf("Warning: failed to generate thumbnail locally: %v\n", err)
+			return "", nil
 		}
 
 		return thumbnailName, nil

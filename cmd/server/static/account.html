@@ -428,6 +428,44 @@
       transform: translateX(-4px);
     }
 
+    .lang-switch {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 6px;
+      font-size: 0.8em;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      z-index: 2;
+    }
+
+    .lang-switch button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      opacity: 0.5;
+      cursor: pointer;
+      padding: 4px 6px;
+      font-size: 1em;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+
+    .lang-switch button.active {
+      color: var(--accent-bright);
+      opacity: 1;
+    }
+
+    .lang-switch button:hover {
+      opacity: 1;
+    }
+
+    .lang-switch span {
+      color: var(--text-secondary);
+      opacity: 0.3;
+    }
+
     /* Mobile adjustments */
     @media (max-width: 480px) {
       .auth-card {
@@ -455,45 +493,52 @@
   </style>
 </head>
 <body>
+  <script src="/static/i18n.js"></script>
+
+  <div class="lang-switch">
+    <button type="button" data-lang-option="pt" onclick="i18n.setLang('pt')">PT</button>
+    <span>/</span>
+    <button type="button" data-lang-option="en" onclick="i18n.setLang('en')">EN</button>
+  </div>
 
   <div class="container">
     <div class="auth-card">
       <div class="logo">
         <div class="logo-icon">🗃️</div>
         <h1>Wireless Drive</h1>
-        <p>Acesse seus arquivos</p>
+        <p data-i18n="tagline">Acesse seus arquivos</p>
       </div>
 
       <div class="tabs">
-        <button class="tab active" onclick="switchTab('login')">Login</button>
-        <button class="tab" onclick="switchTab('register')">Cadastro</button>
+        <button class="tab active" onclick="switchTab('login')" data-i18n="tabLogin">Login</button>
+        <button class="tab" onclick="switchTab('register')" data-i18n="tabRegister">Cadastro</button>
       </div>
 
       <!-- Login Form -->
       <div id="loginForm" class="form-content active">
         <form onsubmit="handleLogin(event)">
           <div class="form-group">
-            <label>Código</label>
+            <label data-i18n="labelCode">Código</label>
             <div class="input-wrapper">
-              <input type="text" id="loginCode" required pattern="[A-Za-z0-9]+" title="Apenas letras e números" placeholder="ex: abc123">
+              <input type="text" id="loginCode" required pattern="[A-Za-z0-9]+" title="Apenas letras e números" placeholder="ex: abc123" data-i18n-placeholder="placeholderCode">
               <span class="input-icon">🔐</span>
             </div>
           </div>
 
           <div class="form-group">
-            <label>Senha</label>
+            <label data-i18n="labelPassword">Senha</label>
             <div class="input-wrapper">
               <input type="password" id="loginPassword" required placeholder="••••••••">
               <span class="input-icon">🔑</span>
             </div>
           </div>
 
-          <button type="submit" class="btn">Entrar</button>
+          <button type="submit" class="btn" data-i18n="btnLogin">Entrar</button>
           <div id="loginMessage"></div>
         </form>
 
         <div class="footer-text">
-          Não tem uma conta? <a href="#" onclick="switchTab('register'); return false;">Cadastre-se</a>
+          <span data-i18n="footerNoAccount">Não tem uma conta?</span> <a href="#" onclick="switchTab('register'); return false;" data-i18n="footerSignUp">Cadastre-se</a>
         </div>
       </div>
 
@@ -501,35 +546,35 @@
       <div id="registerForm" class="form-content">
         <form onsubmit="handleRegister(event)">
           <div class="form-group">
-            <label>Nome</label>
+            <label data-i18n="labelName">Nome</label>
             <div class="input-wrapper">
-              <input type="text" id="registerName" required placeholder="Seu nome completo">
+              <input type="text" id="registerName" required placeholder="Seu nome completo" data-i18n-placeholder="placeholderName">
               <span class="input-icon">👤</span>
             </div>
           </div>
 
           <div class="form-group">
-            <label>Código</label>
+            <label data-i18n="labelCode">Código</label>
             <div class="input-wrapper">
-              <input type="text" id="registerCode" required pattern="[A-Za-z0-9]+" title="Apenas letras e números" placeholder="ex: abc123">
+              <input type="text" id="registerCode" required pattern="[A-Za-z0-9]+" title="Apenas letras e números" placeholder="ex: abc123" data-i18n-placeholder="placeholderCode">
               <span class="input-icon">🔐</span>
             </div>
           </div>
 
           <div class="form-group">
-            <label>Senha</label>
+            <label data-i18n="labelPassword">Senha</label>
             <div class="input-wrapper">
               <input type="password" id="registerPassword" required placeholder="••••••••">
               <span class="input-icon">🔑</span>
             </div>
           </div>
 
-          <button type="submit" class="btn">Criar Conta</button>
+          <button type="submit" class="btn" data-i18n="btnRegister">Criar Conta</button>
           <div id="registerMessage"></div>
         </form>
 
         <div class="footer-text">
-          Já tem uma conta? <a href="#" onclick="switchTab('login'); return false;">Faça login</a>
+          <span data-i18n="footerHasAccount">Já tem uma conta?</span> <a href="#" onclick="switchTab('login'); return false;" data-i18n="footerSignIn">Faça login</a>
         </div>
       </div>
     </div>
@@ -628,7 +673,7 @@
       
       messageDiv.textContent = '';
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Entrando...';
+      submitBtn.textContent = i18n.t('btnLoginLoading');
 
       try {
         const response = await fetch(API_URL + '/api/users/login', {
@@ -640,7 +685,7 @@
         const result = await response.json();
 
         if (response.ok) {
-          messageDiv.textContent = '✅ Login realizado com sucesso!';
+          messageDiv.textContent = i18n.t('msgLoginSuccess');
           messageDiv.className = 'message success';
           
           // Store token if provided
@@ -653,15 +698,15 @@
             window.location.href = '/website/dashboard';
           }, 500);
         } else {
-          messageDiv.textContent = '❌ ' + (result.error || 'Código ou senha incorretos');
+          messageDiv.textContent = '❌ ' + (result.error || i18n.t('msgLoginErrorDefault'));
           messageDiv.className = 'message error';
         }
       } catch (error) {
-        messageDiv.textContent = '❌ Erro ao conectar: ' + error.message;
+        messageDiv.textContent = i18n.t('msgConnectionError') + error.message;
         messageDiv.className = 'message error';
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Entrar';
+        submitBtn.textContent = i18n.t('btnLogin');
       }
     }
 
@@ -677,7 +722,7 @@
       
       messageDiv.textContent = '';
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Criando...';
+      submitBtn.textContent = i18n.t('btnRegisterLoading');
 
       try {
         const response = await fetch(API_URL + '/api/users/register', {
@@ -689,7 +734,7 @@
         const result = await response.json();
 
         if (response.ok) {
-          messageDiv.textContent = '✅ Conta criada com sucesso! Faça login.';
+          messageDiv.textContent = i18n.t('msgRegisterSuccess');
           messageDiv.className = 'message success';
           
           // Clear form
@@ -703,15 +748,15 @@
             document.getElementById('loginCode').value = code;
           }, 1500);
         } else {
-          messageDiv.textContent = '❌ ' + (result.error || 'Erro ao criar conta');
+          messageDiv.textContent = '❌ ' + (result.error || i18n.t('msgRegisterErrorDefault'));
           messageDiv.className = 'message error';
         }
       } catch (error) {
-        messageDiv.textContent = '❌ Erro ao conectar: ' + error.message;
+        messageDiv.textContent = i18n.t('msgConnectionError') + error.message;
         messageDiv.className = 'message error';
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Criar Conta';
+        submitBtn.textContent = i18n.t('btnRegister');
       }
     }
 

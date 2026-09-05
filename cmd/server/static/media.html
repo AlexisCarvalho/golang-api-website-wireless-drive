@@ -3,7 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Mídia - Wireless Drive</title>
+  <script>
+    if (sessionStorage.getItem('wd_introPlayed') === '1') {
+      document.documentElement.classList.add('no-intro-anim');
+    } else {
+      sessionStorage.setItem('wd_introPlayed', '1');
+    }
+  </script>
+  <title data-i18n="mediaPageTitle">Mídia - Wireless Drive</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <style>
     * {
@@ -471,6 +478,74 @@
       text-decoration: none;
     }
 
+    .playlist-nav {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .nav-counter {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      min-width: 56px;
+      text-align: center;
+    }
+
+    .btn.nav-btn {
+      background: rgba(167, 139, 250, 0.12);
+      color: var(--text-primary);
+      border: 1px solid rgba(167, 139, 250, 0.25);
+      padding: 12px 18px;
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.15);
+    }
+
+    .btn.nav-btn:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 28px rgba(167, 139, 250, 0.35);
+    }
+
+    .btn.nav-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .btn.nav-btn:disabled:hover {
+      transform: none;
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.15);
+    }
+
+    .btn.nav-toggle {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-secondary);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 12px 20px;
+      margin-left: auto;
+    }
+
+    .btn.nav-toggle:first-of-type {
+      margin-left: auto;
+    }
+
+    .btn.nav-toggle.active {
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 8px 22px rgba(167, 139, 250, 0.4);
+    }
+
+    .btn.nav-toggle:hover {
+      transform: translateY(-3px);
+    }
+
+    @media (max-width: 768px) {
+      .playlist-nav { justify-content: center; }
+      .btn.nav-toggle { margin-left: 0; }
+    }
+
     .file-info {
       margin-top: 32px;
       padding-top: 24px;
@@ -596,60 +671,138 @@
         max-width: none;
       }
     }
+
+    html.no-intro-anim .site-header,
+    html.no-intro-anim main {
+      animation: none;
+      opacity: 1;
+    }
+
+    .media-loading-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px;
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.08) 0%, rgba(192, 132, 252, 0.08) 100%);
+      border-radius: 16px;
+      margin: 24px 0;
+    }
+
+    .media-spinner {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 4px solid rgba(167, 139, 250, 0.2);
+      border-top-color: var(--accent);
+      animation: mediaSpin 0.8s linear infinite;
+    }
+
+    @keyframes mediaSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    .lang-switch {
+      position: fixed;
+      top: 18px;
+      right: 20px;
+      display: flex;
+      gap: 6px;
+      font-size: 0.8em;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      z-index: 20;
+    }
+
+    .lang-switch button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      opacity: 0.5;
+      cursor: pointer;
+      padding: 4px 6px;
+      font-size: 1em;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+
+    .lang-switch button.active {
+      color: var(--accent-hover);
+      opacity: 1;
+    }
+
+    .lang-switch button:hover {
+      opacity: 1;
+    }
+
+    .lang-switch span {
+      color: var(--text-secondary);
+      opacity: 0.3;
+    }
   </style>
 </head>
 <body>
-  
+  <script src="/static/i18n.js"></script>
+
   <header class="site-header">
     <h1><a href="/">Wireless Drive</a></h1>
     <nav>
-      <a href="/website/dashboard" class="back-link">← Voltar</a>
-      <a href="#" id="deleteBtn" class="delete-link">🗑️ Excluir</a>
+      <a href="/website/dashboard" class="back-link" data-i18n="backLink">← Voltar</a>
+      <a href="#" id="deleteBtn" class="delete-link" data-i18n="deleteLink">🗑️ Excluir</a>
     </nav>
   </header>
 
   <main class="container">
     <div class="card">
       <div class="title-row">
-        <h1 id="mediaTitle">Carregando...</h1>
-        <button class="edit-icon-btn" id="editInfoBtn" type="button" title="Editar título">✏️</button>
+        <h1 id="mediaTitle" data-i18n="loadingTitle">Carregando...</h1>
+        <button class="edit-icon-btn" id="editInfoBtn" type="button" title="Editar título" data-i18n-title="editTitleTooltip">✏️</button>
       </div>
-      <div class="muted" id="mediaDate">📅 Carregando...</div>
+      <div class="muted" id="mediaDate" data-i18n="loadingDate">📅 Carregando...</div>
 
       <div class="edit-form" id="editForm">
         <div>
-          <label for="editTitleInput">Título</label>
+          <label for="editTitleInput" data-i18n="labelTitle">Título</label>
           <input type="text" id="editTitleInput" maxlength="255">
         </div>
         <div class="edit-actions">
-          <button class="btn save" id="saveInfoBtn" type="button">💾 Salvar</button>
-          <button class="btn cancel" id="cancelEditBtn" type="button">Cancelar</button>
+          <button class="btn save" id="saveInfoBtn" type="button" data-i18n="btnSave">💾 Salvar</button>
+          <button class="btn cancel" id="cancelEditBtn" type="button" data-i18n="btnCancel">Cancelar</button>
         </div>
       </div>
 
       <div id="mediaContentContainer">
-        <div style="font-size:5rem;text-align:center;padding:60px 20px;background:linear-gradient(135deg,rgba(167,139,250,0.08) 0%,rgba(192,132,252,0.08) 100%);border-radius:16px;margin:24px 0;filter:drop-shadow(0 4px 20px rgba(167,139,250,0.2))">📄</div>
+        <div class="media-loading-placeholder">
+          <div class="media-spinner"></div>
+        </div>
       </div>
 
       <div class="actions">
         <a class="download" href="#" id="downloadLink">
-          <button class="btn download">⬇️ Baixar</button>
+          <button class="btn download" data-i18n="btnDownload">⬇️ Baixar</button>
         </a>
-        <button class="btn generate" id="generateThumbnailBtn" type="button" style="display:none">🖼️ Gerar thumbnail</button>
-        <button class="btn delete-thumb" id="deleteThumbnailBtn" type="button" style="display:none">🗑️ Deletar thumbnail</button>
+        <button class="btn generate" id="generateThumbnailBtn" type="button" style="display:none" data-i18n="btnGenerateThumbnail"></button>
+        <button class="btn delete-thumb" id="deleteThumbnailBtn" type="button" style="display:none" data-i18n="btnDeleteThumbnail"></button>
+      </div>
+
+      <div class="playlist-nav" id="playlistNav">
+        <button class="btn nav-btn" id="navPrevBtn" type="button" data-i18n-title="navPrevTooltip">⏮️</button>
+        <span class="nav-counter" id="navCounter">– / –</span>
+        <button class="btn nav-btn" id="navNextBtn" type="button" data-i18n-title="navNextTooltip">⏭️</button>
+        <button class="btn nav-toggle" id="navAutoplayBtn" type="button" data-i18n-title="navAutoplayTooltip">▶️ <span data-i18n="navAutoplay">Autoplay</span></button>
+        <button class="btn nav-toggle" id="navShuffleBtn" type="button" data-i18n-title="navShuffleTooltip">🔀 <span data-i18n="navShuffle">Aleatório</span></button>
       </div>
 
       <div class="file-info">
         <div class="info-item">
-          <strong>Tipo</strong>
+          <strong data-i18n="labelType">Tipo</strong>
           <span id="mediaType">unknown</span>
         </div>
         <div class="info-item">
-          <strong>Formato</strong>
+          <strong data-i18n="labelFormat">Formato</strong>
           <span id="mediaMimeType">unknown</span>
         </div>
         <div class="info-item">
-          <strong>ID</strong>
+          <strong data-i18n="labelId">ID</strong>
           <span id="mediaID">#0</span>
         </div>
       </div>
@@ -661,31 +814,33 @@
     let currentMediaData = null;
 
     window.addEventListener("DOMContentLoaded", function() {
-      gsap.from(".site-header > *", {
-        opacity: 0,
-        y: 20,
-        duration: 0.8,
-        stagger: 0.1,
-        ease: "power2.out",
-        delay: 0.3
-      });
+      if (!document.documentElement.classList.contains('no-intro-anim')) {
+        gsap.from(".site-header > *", {
+          opacity: 0,
+          y: 20,
+          duration: 0.8,
+          stagger: 0.1,
+          ease: "power2.out",
+          delay: 0.3
+        });
 
-      gsap.from('.card', {
-        opacity: 0,
-        y: 30,
-        duration: 0.8,
-        delay: 0.6,
-        ease: 'power3.out'
-      });
+        gsap.from('.card', {
+          opacity: 0,
+          y: 30,
+          duration: 0.8,
+          delay: 0.6,
+          ease: 'power3.out'
+        });
 
-      gsap.from('.card > *', {
-        opacity: 0,
-        y: 15,
-        duration: 0.6,
-        stagger: 0.08,
-        delay: 0.8,
-        ease: 'power2.out'
-      });
+        gsap.from('.card > *', {
+          opacity: 0,
+          y: 15,
+          duration: 0.6,
+          stagger: 0.08,
+          delay: 0.8,
+          ease: 'power2.out'
+        });
+      }
 
       document.querySelectorAll('.muted').forEach(function(el){
         var txt = el.textContent.replace(/^📅\s*/, '').trim();
@@ -693,9 +848,9 @@
         if(!isNaN(d.getTime())){
           var opts = { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' };
           try{
-            el.textContent = '📅 ' + d.toLocaleString(undefined, opts);
+            el.textContent = '📅 ' + d.toLocaleString(i18n.locale, opts);
           }catch(e){
-            el.textContent = '📅 ' + d.toLocaleDateString();
+            el.textContent = '📅 ' + d.toLocaleDateString(i18n.locale);
           }
         }
       });
@@ -734,7 +889,7 @@
       toast.innerHTML =
         '<div class="app-toast-icon">' + (icons[type] || icons.info) + '</div>' +
         '<div class="app-toast-message"></div>' +
-        '<button type="button" class="app-toast-close" aria-label="Fechar">✕</button>';
+        '<button type="button" class="app-toast-close" aria-label="' + i18n.t('toastCloseAria') + '">✕</button>';
       toast.querySelector('.app-toast-message').textContent = message;
 
       container.appendChild(toast);
@@ -766,8 +921,8 @@
 
       showAppAlert(
         status === 403
-          ? 'Você não tem permissão para acessar isso. Redirecionando para o login...'
-          : 'Sua sessão expirou. Redirecionando para o login...',
+          ? i18n.t('authForbidden')
+          : i18n.t('authExpired'),
         'warning'
       );
 
@@ -801,6 +956,35 @@
 
     function buildStreamSrc(url) {
       return url.startsWith('http') ? url : API_URL + url;
+    }
+
+    function attachVolumePersistence(playerEl) {
+      try {
+        var storedVolume = localStorage.getItem('wd_playerVolume');
+        var storedMuted = localStorage.getItem('wd_playerMuted');
+
+        if (storedVolume !== null) {
+          var vol = parseFloat(storedVolume);
+          if (!isNaN(vol) && vol >= 0 && vol <= 1) {
+            playerEl.volume = vol;
+          }
+        }
+
+        if (storedMuted !== null) {
+          playerEl.muted = storedMuted === 'true';
+        }
+      } catch (e) {
+        console.error('Failed to restore player volume:', e);
+      }
+
+      playerEl.addEventListener('volumechange', function() {
+        try {
+          localStorage.setItem('wd_playerVolume', String(playerEl.volume));
+          localStorage.setItem('wd_playerMuted', playerEl.muted ? 'true' : 'false');
+        } catch (e) {
+          console.error('Failed to save player volume:', e);
+        }
+      });
     }
 
     // HTMLMediaElement doesn't expose the HTTP status of a failed request, 
@@ -848,12 +1032,12 @@
             playerEl.load();
           })
           .catch(function(err) {
-            console.error('Erro ao renovar a URL de streaming:', err);
+            console.error('Failed to renew streaming URL:', err);
             // 401/403 responses are handled centrally by authFetch
             // (notification + redirect to the login screen). If execution
             // reaches this point, it's a different issue -- network outage,
             // 404, 500, etc.
-            showAppAlert('Não foi possível renovar o link de streaming. Tente recarregar a página.', 'error');
+            showAppAlert(i18n.t('errorRenewStream'), 'error');
           })
           .finally(function() {
             isReloading = false;
@@ -865,7 +1049,7 @@
         if (isReloading) return;
 
         if (consecutiveErrorCount > MAX_CONSECUTIVE_MEDIA_ERRORS) {
-          showAppAlert('Não foi possível carregar a mídia após várias tentativas. Atualize a página.', 'error');
+          showAppAlert(i18n.t('errorMediaRetries'), 'error');
           return;
         }
 
@@ -898,6 +1082,183 @@
       if (idFromQuery) return idFromQuery;
     }
 
+    function shouldAutoStartPlayback() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('autoplay') === '1';
+    }
+
+    var navPlaylist = [];
+    var navCurrentIndex = -1;
+    var autoplayEnabled = localStorage.getItem('wd_autoplayEnabled') === 'true';
+    var shuffleEnabled = localStorage.getItem('wd_shuffleEnabled') === 'true';
+    var autoAdvanceTimer = null;
+    var AUTOPLAY_IMAGE_DELAY_MS = 6000;
+
+    function getStoredPlaylist() {
+      try {
+        var raw = localStorage.getItem('wd_mediaPlaylist');
+        if (!raw) return [];
+        var parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function getSameTypePlaylist(type) {
+      return getStoredPlaylist().filter(function(item) {
+        return item.type === type;
+      });
+    }
+
+    function findPlaylistIndex(list, id) {
+      var idStr = String(id);
+      for (var i = 0; i < list.length; i++) {
+        if (String(list[i].id) === idStr) return i;
+      }
+      return -1;
+    }
+
+    function getNavHistory() {
+      try {
+        var raw = sessionStorage.getItem('wd_navHistory');
+        var parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function pushNavHistory(id) {
+      var hist = getNavHistory();
+      hist.push(id);
+      if (hist.length > 200) hist = hist.slice(hist.length - 200);
+      sessionStorage.setItem('wd_navHistory', JSON.stringify(hist));
+    }
+
+    function popNavHistory() {
+      var hist = getNavHistory();
+      var last = hist.pop();
+      sessionStorage.setItem('wd_navHistory', JSON.stringify(hist));
+      return last;
+    }
+
+    function pickNextId() {
+      if (navPlaylist.length <= 1) return null;
+
+      if (shuffleEnabled) {
+        var idx;
+        do {
+          idx = Math.floor(Math.random() * navPlaylist.length);
+        } while (idx === navCurrentIndex);
+        return navPlaylist[idx].id;
+      }
+
+      var nextIndex = navCurrentIndex >= 0
+        ? (navCurrentIndex + 1) % navPlaylist.length
+        : 0;
+      return navPlaylist[nextIndex].id;
+    }
+
+    function goToNext() {
+      var nextId = pickNextId();
+      if (nextId === null || nextId === undefined) return;
+
+      var currentId = getMediaID();
+      if (currentId) pushNavHistory(currentId);
+
+      window.location.href = '/website/media?id=' + nextId + '&autoplay=1';
+    }
+
+    function goToPrevious() {
+      var prevId = popNavHistory();
+      if (!prevId) return;
+      window.location.href = '/website/media?id=' + prevId + '&autoplay=1';
+    }
+
+    function clearAutoAdvanceTimer() {
+      if (autoAdvanceTimer) {
+        clearTimeout(autoAdvanceTimer);
+        autoAdvanceTimer = null;
+      }
+    }
+
+    function setupAutoAdvance(mediaType) {
+      clearAutoAdvanceTimer();
+      if (!autoplayEnabled || navPlaylist.length <= 1) return;
+
+      if (mediaType === 'image') {
+        autoAdvanceTimer = setTimeout(function() {
+          goToNext();
+        }, AUTOPLAY_IMAGE_DELAY_MS);
+      }
+    }
+
+    function setupPlaylistNav(data) {
+      navPlaylist = getSameTypePlaylist(data.Type);
+      navCurrentIndex = findPlaylistIndex(navPlaylist, data.ID);
+
+      var navBar = document.getElementById('playlistNav');
+      if (!navBar) return;
+
+      if (navPlaylist.length <= 1) {
+        navBar.style.display = 'none';
+        clearAutoAdvanceTimer();
+        return;
+      }
+
+      navBar.style.display = 'flex';
+
+      var prevBtn = document.getElementById('navPrevBtn');
+      var nextBtn = document.getElementById('navNextBtn');
+      var autoplayBtn = document.getElementById('navAutoplayBtn');
+      var shuffleBtn = document.getElementById('navShuffleBtn');
+      var counterEl = document.getElementById('navCounter');
+
+      if (counterEl) {
+        var posLabel = navCurrentIndex >= 0 ? String(navCurrentIndex + 1) : '?';
+        counterEl.textContent = posLabel + ' / ' + navPlaylist.length;
+      }
+
+      if (prevBtn) {
+        prevBtn.disabled = getNavHistory().length === 0;
+        prevBtn.onclick = function(e) {
+          e.preventDefault();
+          goToPrevious();
+        };
+      }
+
+      if (nextBtn) {
+        nextBtn.onclick = function(e) {
+          e.preventDefault();
+          goToNext();
+        };
+      }
+
+      if (autoplayBtn) {
+        autoplayBtn.classList.toggle('active', autoplayEnabled);
+        autoplayBtn.onclick = function(e) {
+          e.preventDefault();
+          autoplayEnabled = !autoplayEnabled;
+          localStorage.setItem('wd_autoplayEnabled', autoplayEnabled ? 'true' : 'false');
+          autoplayBtn.classList.toggle('active', autoplayEnabled);
+          setupAutoAdvance(data.Type);
+        };
+      }
+
+      if (shuffleBtn) {
+        shuffleBtn.classList.toggle('active', shuffleEnabled);
+        shuffleBtn.onclick = function(e) {
+          e.preventDefault();
+          shuffleEnabled = !shuffleEnabled;
+          localStorage.setItem('wd_shuffleEnabled', shuffleEnabled ? 'true' : 'false');
+          shuffleBtn.classList.toggle('active', shuffleEnabled);
+        };
+      }
+
+      setupAutoAdvance(data.Type);
+    }
+
     function loadMediaData() {
       const mediaID = getMediaID();
 
@@ -907,12 +1268,23 @@
 
           currentMediaData = data;
 
-          var typeLabels = { video: 'Vídeo', audio: 'Áudio', image: 'Imagem', other: 'Arquivo' };
-          document.title = (typeLabels[data.Type] || 'Mídia') + ' - Wireless Drive';
+          setupPlaylistNav(data);
+
+          var typeLabels = { video: i18n.t('typeVideo'), audio: i18n.t('typeAudio'), image: i18n.t('typeImage'), other: i18n.t('typeOther') };
+          document.title = (typeLabels[data.Type] || i18n.t('typeMedia')) + ' - ' + data.Title || 'Wireless Drive';
 
           document.getElementById('mediaTitle').textContent = data.Title;
-          document.getElementById('mediaDate').textContent =
-            '📅 ' + new Date(data.CreatedAt).toLocaleString();
+          
+          var d = new Date(data.CreatedAt);
+          
+          if(!isNaN(d.getTime())){
+            var opts = { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' };
+            try{
+              document.getElementById('mediaDate').textContent = '📅 ' + d.toLocaleString(i18n.locale, opts);
+            }catch(e){
+              document.getElementById('mediaDate').textContent = '📅 ' + d.toLocaleDateString(i18n.locale);
+            }
+          }
 
           document.getElementById('mediaType').textContent = data.Type;
           document.getElementById('mediaMimeType').textContent = data.MimeType;
@@ -938,23 +1310,33 @@
                 videoElement.innerHTML =
                   '<video id="player" controls preload="metadata">' +
                     '<source src="' + API_URL + streamData.url + '" type="' + data.MimeType + '">' +
-                    'Seu navegador não suporta o elemento de vídeo.' +
+                    i18n.t('videoNotSupported') +
                   '</video>';
 
 
                 container.innerHTML = '';
                 container.appendChild(videoElement);
 
+                attachVolumePersistence(document.getElementById('player'));
                 attachStreamRecovery(document.getElementById('player'), data.ID);
+
+                document.getElementById('player').addEventListener('ended', function() {
+                  if (autoplayEnabled) goToNext();
+                });
+
+                if (shouldAutoStartPlayback()) {
+                  document.getElementById('player').play().catch(function() {
+                  });
+                }
 
               })
               .catch(function(err) {
-                console.error('Erro ao carregar vídeo:', err);
+                console.error('Failed to load video:', err);
               });
 
 
             document.querySelector('.btn.download').textContent =
-              '⬇️ Baixar vídeo';
+              i18n.t('btnDownloadVideo');
 
 
           } else if (data.Type === 'audio') {
@@ -978,22 +1360,32 @@
                   '<div style="font-size:4rem;filter:drop-shadow(0 4px 20px rgba(167,139,250,0.3))">🎧</div>' +
                   '<audio id="player" controls preload="metadata" style="width:100%;max-width:500px">' +
                     '<source src="' + API_URL + streamData.url + '" type="' + data.MimeType + '">' +
-                    'Seu navegador não suporta o elemento de áudio.' +
+                    i18n.t('audioNotSupported') +
                   '</audio>';
 
                 container.innerHTML = '';
                 container.appendChild(audioElement);
 
+                attachVolumePersistence(document.getElementById('player'));
                 attachStreamRecovery(document.getElementById('player'), data.ID);
+
+                document.getElementById('player').addEventListener('ended', function() {
+                  if (autoplayEnabled) goToNext();
+                });
+
+                if (shouldAutoStartPlayback()) {
+                  document.getElementById('player').play().catch(function() {
+                  });
+                }
 
               })
               .catch(function(err) {
-                console.error('Erro ao carregar áudio:', err);
+                console.error('Failed to load audio:', err);
               });
 
 
             document.querySelector('.btn.download').textContent =
-              '⬇️ Baixar áudio';
+              i18n.t('btnDownloadAudio');
 
 
           } else if (data.Type === 'image') {
@@ -1019,12 +1411,12 @@
 
               })
               .catch(function(err) {
-                console.error('Erro ao carregar imagem:', err);
+                console.error('Failed to load image:', err);
               });
 
 
             document.querySelector('.btn.download').textContent =
-              '⬇️ Baixar imagem';
+              i18n.t('btnDownloadImage');
 
 
           } else {
@@ -1033,7 +1425,7 @@
               '<div style="font-size:5rem;text-align:center;padding:60px 20px;background:linear-gradient(135deg,rgba(167,139,250,0.08) 0%,rgba(192,132,252,0.08) 100%);border-radius:16px;margin:24px 0;filter:drop-shadow(0 4px 20px rgba(167,139,250,0.2))">📄</div>';
 
             document.querySelector('.btn.download').textContent =
-              '⬇️ Baixar arquivo';
+              i18n.t('btnDownloadFile');
           }
 
 
@@ -1060,7 +1452,7 @@
 
               generateBtn.style.display = 'inline-flex';
               generateBtn.disabled = false;
-              generateBtn.textContent = '🖼️ Gerar thumbnail';
+              generateBtn.textContent = i18n.t('btnGenerateThumbnail');
 
               generateBtn.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -1074,7 +1466,7 @@
 
               deleteThumbBtn.style.display = 'inline-flex';
               deleteThumbBtn.disabled = false;
-              deleteThumbBtn.textContent = '🗑️ Deletar thumbnail';
+              deleteThumbBtn.textContent = i18n.t('btnDeleteThumbnail');
 
               deleteThumbBtn.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -1099,10 +1491,10 @@
         })
         .catch(function(err) {
 
-          console.error('Erro ao carregar mídia:', err);
+          console.error('Failed to load media:', err);
 
           document.getElementById('mediaTitle').textContent =
-            'Erro ao carregar';
+            i18n.t('errorLoadingMediaTitle');
 
         });
     }
@@ -1117,7 +1509,7 @@
         })
         .catch(function (err) {
           console.error('Erro ao carregar arquivo:', err);
-          showAppAlert('Erro ao baixar arquivo: ' + err.message, 'error');
+          showAppAlert(i18n.t('errorDownloadFile') + err.message, 'error');
         });
     }
 
@@ -1126,7 +1518,7 @@
       if (!generateBtn) return;
 
       generateBtn.disabled = true;
-      generateBtn.textContent = '⏳ Gerando...';
+      generateBtn.textContent = i18n.t('btnGeneratingThumb');
 
       authFetch('/api/media/' + mediaID + '/generate-thumbnail', {
         method: 'POST',
@@ -1135,20 +1527,20 @@
         .then(function(resp) {
           return resp.json().then(function(data) {
             if (!resp.ok) {
-              throw new Error(data.error || data.message || 'Erro ao gerar thumbnail');
+              throw new Error(data.error || data.message || i18n.t('errorGenerateThumb'));
             }
             return data;
           });
         })
         .then(function(data) {
-          generateBtn.textContent = '✅ Gerado';
+          generateBtn.textContent = i18n.t('btnThumbGenerated');
           setTimeout(function() {
-            generateBtn.textContent = '🖼️ Gerar thumbnail';
+            generateBtn.textContent = i18n.t('btnGenerateThumbnail');
           }, 2500);
         })
         .catch(function(err) {
-          showAppAlert('Erro ao gerar thumbnail: ' + err.message, 'error');
-          generateBtn.textContent = '↻ Tentar novamente';
+          showAppAlert(i18n.t('errorGenerateThumb') + err.message, 'error');
+          generateBtn.textContent = i18n.t('retryBtn');
         })
         .finally(function() {
           setTimeout(function() {
@@ -1161,12 +1553,12 @@
       var deleteThumbBtn = document.getElementById('deleteThumbnailBtn');
       if (!deleteThumbBtn) return;
 
-      if (!confirm('Tem certeza que deseja deletar o thumbnail desta mídia?')) {
+      if (!confirm(i18n.t('confirmDeleteThumb'))) {
         return;
       }
 
       deleteThumbBtn.disabled = true;
-      deleteThumbBtn.textContent = '⏳ Deletando...';
+      deleteThumbBtn.textContent = i18n.t('btnDeletingThumb');
 
       authFetch('/api/media/' + mediaID + '/delete-thumbnail', {
         method: 'POST',
@@ -1175,20 +1567,20 @@
         .then(function(resp) {
           return resp.json().then(function(data) {
             if (!resp.ok) {
-              throw new Error(data.error || data.message || 'Erro ao deletar thumbnail');
+              throw new Error(data.error || data.message || i18n.t('errorDeleteThumb'));
             }
             return data;
           });
         })
         .then(function(data) {
-          deleteThumbBtn.textContent = '✅ Deletado';
+          deleteThumbBtn.textContent = i18n.t('btnThumbDeleted');
           setTimeout(function() {
-            deleteThumbBtn.textContent = '🗑️ Deletar thumbnail';
+            deleteThumbBtn.textContent = i18n.t('btnDeleteThumbnail');
           }, 2500);
         })
         .catch(function(err) {
-          showAppAlert('Erro ao deletar thumbnail: ' + err.message, 'error');
-          deleteThumbBtn.textContent = '↻ Tentar novamente';
+          showAppAlert(i18n.t('errorDeleteThumb') + err.message, 'error');
+          deleteThumbBtn.textContent = i18n.t('retryBtn');
         })
         .finally(function() {
           setTimeout(function() {
@@ -1234,12 +1626,12 @@
         const newTitle = document.getElementById('editTitleInput').value.trim();
 
         if (!newTitle) {
-          showAppAlert('O título não pode ficar vazio.', 'warning');
+          showAppAlert(i18n.t('errorTitleEmpty'), 'warning');
           return;
         }
 
         saveInfoBtn.disabled = true;
-        saveInfoBtn.textContent = '⏳ Salvando...';
+        saveInfoBtn.textContent = i18n.t('btnSaving');
 
         authFetch('/api/media/' + mediaID, {
           method: 'PUT',
@@ -1249,7 +1641,7 @@
           .then(function(resp) {
             return resp.json().then(function(data) {
               if (!resp.ok) {
-                throw new Error(data.error || data.message || 'Erro ao atualizar mídia');
+                throw new Error(data.error || data.message || i18n.t('errorUpdateMedia'));
               }
               return data;
             });
@@ -1259,15 +1651,15 @@
 
             document.getElementById('mediaTitle').textContent = newTitle;
 
-            saveInfoBtn.textContent = '✅ Salvo';
+            saveInfoBtn.textContent = i18n.t('btnSaved');
             setTimeout(function() {
               editForm.style.display = 'none';
-              saveInfoBtn.textContent = '💾 Salvar';
+              saveInfoBtn.textContent = i18n.t('btnSave');
             }, 900);
           })
           .catch(function(err) {
-            showAppAlert('Erro ao atualizar mídia: ' + err.message, 'error');
-            saveInfoBtn.textContent = '💾 Salvar';
+            showAppAlert(i18n.t('errorUpdateMedia') + err.message, 'error');
+            saveInfoBtn.textContent = i18n.t('btnSave');
           })
           .finally(function() {
             setTimeout(function() {
@@ -1281,7 +1673,7 @@
     if(deleteBtn){
       deleteBtn.addEventListener('click', function(e){
         e.preventDefault();
-        if(!confirm('Tem certeza que deseja excluir esta mídia?')) return;
+        if(!confirm(i18n.t('confirmDeleteMedia'))) return;
         
         const mediaID = getMediaID();
         
@@ -1294,11 +1686,11 @@
           if(data && data.message){ 
             window.location.href = '/website/dashboard'; 
           } else { 
-            showAppAlert('Erro ao excluir', 'error'); 
+            showAppAlert(i18n.t('errorDelete'), 'error'); 
           } 
         })
         .catch(function(e){ 
-          showAppAlert('Erro ao excluir: ' + e.message, 'error'); 
+          showAppAlert(i18n.t('errorDeleteWithMsg') + e.message, 'error'); 
         });
       });
     }

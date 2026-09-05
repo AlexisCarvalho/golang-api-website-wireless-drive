@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Upload - Wireless Drive</title>
+  <title data-i18n="uploadPageTitle">Upload - Wireless Drive</title>
   <style>
     * {
       margin: 0;
@@ -829,24 +829,25 @@
   </style>
 </head>
 <body>
-  
+  <script src="/static/i18n.js"></script>
+
   <header class="site-header">
     <h1><a href="/">Wireless Drive</a></h1>
-    <a href="/website/dashboard" class="back-button"><span>←</span> Voltar</a>
+    <a href="/website/dashboard" class="back-button"><span data-i18n="backLink">Voltar</span></a>
   </header>
 
   <main class="container">
     <form class="upload-form" id="uploadForm" onsubmit="handleUpload(event)">
-      <h2>Fazer Upload</h2>
-      <p class="subtitle">Arraste arquivos aqui ou selecione para fazer upload (múltiplos arquivos suportados)</p>
+      <h2 data-i18n="uploadTitle">Fazer Upload</h2>
+      <p class="subtitle" data-i18n="uploadSubtitle">Arraste arquivos aqui ou selecione para fazer upload (múltiplos arquivos suportados)</p>
 
       <!-- Drop Zone -->
       <div id="dropZone" class="drop-zone">
         <div class="drop-zone-content">
           <div class="drop-icon">📁</div>
-          <p class="drop-text">Arraste seus arquivos aqui</p>
-          <p class="drop-subtext">ou</p>
-          <label for="fileInput" class="select-files-btn">Selecione arquivos</label>
+          <p class="drop-text" data-i18n="dropText">Arraste seus arquivos aqui</p>
+          <p class="drop-subtext" data-i18n="dropSubtext">ou</p>
+          <label for="fileInput" class="select-files-btn" data-i18n="selectFilesButton">Selecione arquivos</label>
         </div>
       </div>
 
@@ -854,11 +855,11 @@
 
       <!-- Files List -->
       <div id="filesContainer" class="files-container" style="display: none;">
-        <h3 style="color: var(--text-primary); margin-bottom: 16px;">Arquivos selecionados</h3>
+        <h3 style="color: var(--text-primary); margin-bottom: 16px;" data-i18n="filesSelected">Arquivos selecionados</h3>
         <div id="filesList" class="files-list"></div>
       </div>
 
-      <button type="submit" id="submitBtn" style="display: none;">Enviar Uploads 🚀</button>
+      <button type="submit" id="submitBtn" style="display: none;" data-i18n="uploadButton">Enviar Uploads 🚀</button>
       <div id="uploadMessage"></div>
 
       <!-- Upload Progress -->
@@ -868,12 +869,12 @@
     </form>
 
     <div class="tips">
-      <h3>Dicas</h3>
+      <h3 data-i18n="tipsTitle">Dicas</h3>
       <ul>
-        <li>Formatos suportados: JPG, PNG, GIF, MP4, WebM, PDF, DOC, DOCX, PPT, XLS, TXT, ZIP</li>
-        <li>Tamanho máximo recomendado para imagens: 50MB </li>
-        <li>Os títulos serão preenchidos automaticamente com o nome do arquivo e podem ser editados depois</li>
-        <li>Você pode fazer upload de múltiplos arquivos simultaneamente</li>
+        <li data-i18n="uploadSupportedFormats">Formatos suportados: JPG, PNG, GIF, MP4, WebM, PDF, DOC, DOCX, PPT, XLS, TXT, ZIP</li>
+        <li data-i18n="uploadImageMaxSize">Tamanho máximo recomendado para imagens: 50MB</li>
+        <li data-i18n="uploadAutoTitle">Os títulos serão preenchidos automaticamente com o nome do arquivo e podem ser editados depois</li>
+        <li data-i18n="uploadMultipleFiles">Você pode fazer upload de múltiplos arquivos simultaneamente</li>
       </ul>
     </div>
   </main>
@@ -1039,7 +1040,7 @@
               <div class="file-size">${fileSizeMB} MB</div>
             </div>
           </div>
-          <button type="button" class="remove-file" onclick="removeFile(${index})">Remover</button>
+          <button type="button" class="remove-file" onclick="removeFile(${index})">${i18n.t('removeFile')}</button>
         `;
         filesList.appendChild(fileItem);
       });
@@ -1148,8 +1149,8 @@
 
       showAppAlert(
         status === 403
-          ? 'Você não tem permissão para acessar isso. Redirecionando para o login...'
-          : 'Sua sessão expirou. Redirecionando para o login...',
+          ? i18n.t('authForbidden')
+          : i18n.t('authExpired'),
         'warning'
       );
 
@@ -1188,7 +1189,7 @@
 
       const token = localStorage.getItem('authToken');
       if (!token) {
-        showAppAlert('Você precisa entrar para enviar arquivos. Redirecionando...', 'warning');
+        showAppAlert(i18n.t('needLoginToUpload'), 'warning');
         setTimeout(function() {
           window.location.href = '/website/account';
         }, 5000);
@@ -1197,7 +1198,7 @@
 
       if (selectedFiles.length === 0) {
         const messageDiv = document.getElementById('uploadMessage');
-        messageDiv.textContent = '❌ Selecione pelo menos um arquivo';
+        messageDiv.textContent = i18n.t('selectAtLeastOneFile');
         messageDiv.className = 'message error';
         return;
       }
@@ -1208,7 +1209,7 @@
       const progressItems = document.getElementById('progressItems');
 
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Enviando...';
+      submitBtn.textContent = i18n.t('uploading');
       messageDiv.textContent = '';
       uploadProgress.style.display = 'block';
       progressItems.innerHTML = '';
@@ -1229,7 +1230,7 @@
           <div class="progress-bar-container">
             <div class="progress-bar" id="progress-bar-${index}"></div>
           </div>
-          <div class="progress-status" id="progress-status-${index}">Enviando...</div>
+          <div class="progress-status" id="progress-status-${index}">${i18n.t('uploading')}</div>
         `;
         progressItems.appendChild(progressItem);
       });
@@ -1243,7 +1244,7 @@
               else failedCount++;
               resolve();
             });
-          }, index * 100); // Pequeno delay entre uploads para não sobrecarregar
+          }, index * 100); // A small delay between uploads to not overload
         });
       });
 
@@ -1251,7 +1252,7 @@
 
       // Show final message
       if (failedCount === 0) {
-        messageDiv.innerHTML = `✅ Todos os ${uploadedCount} arquivo(s) foram enviados com sucesso!`;
+        messageDiv.innerHTML = i18n.t('uploadSuccessAll', { count: uploadedCount });
         messageDiv.className = 'message success';
         
         // Reset and redirect
@@ -1259,15 +1260,15 @@
           window.location.href = '/website/dashboard';
         }, 1500);
       } else if (uploadedCount > 0) {
-        messageDiv.innerHTML = `⚠️ ${uploadedCount} arquivo(s) enviado(s) com sucesso, mas ${failedCount} falharam.`;
+        messageDiv.innerHTML = i18n.t('uploadPartialSuccess', { uploaded: uploadedCount, failed: failedCount });
         messageDiv.className = 'message error';
       } else {
-        messageDiv.innerHTML = `❌ Falha ao enviar ${failedCount} arquivo(s).`;
+        messageDiv.innerHTML = i18n.t('uploadFailedAll', { count: failedCount });
         messageDiv.className = 'message error';
       }
 
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Enviar Uploads 🚀';
+      submitBtn.textContent = i18n.t('uploadButton');
     }
 
     function uploadSingleFile(file, index) {
@@ -1295,7 +1296,7 @@
             percentEl.textContent = percent + '%';
 
             if (percent >= 100) {
-              statusEl.textContent = 'Gerando Thumbnail 🖼️';
+              statusEl.textContent = i18n.t('generatingThumbnail');
               statusEl.className = 'progress-status';
             }
           }
@@ -1311,7 +1312,7 @@
           if (xhr.status >= 200 && xhr.status < 300) {
             barEl.style.width = '100%';
             percentEl.textContent = '100%';
-            statusEl.textContent = '✅ Enviado com sucesso';
+            statusEl.textContent = i18n.t('uploadedSuccess');
             statusEl.className = 'progress-status success';
             resolve(true);
           } else if (xhr.status === 401 || xhr.status === 403) {
@@ -1320,20 +1321,20 @@
             // the user and redirect to the login screen. handleAuthFailure
             // already ensures this is triggered only once, even if multiple
             // files fail at the same time.
-            statusEl.textContent = '❌ Sessão expirada';
+            statusEl.textContent = i18n.t('sessionExpired');
             statusEl.className = 'progress-status error';
             handleAuthFailure(xhr.status);
             resolve(false);
           } else {
-            const errorMsg = result.error || 'Erro desconhecido';
-            statusEl.textContent = '❌ Erro: ' + errorMsg;
+            const errorMsg = result.error || i18n.t('unknownError');
+            statusEl.textContent = i18n.t('errorUpload', { error: errorMsg });
             statusEl.className = 'progress-status error';
             resolve(false);
           }
         });
 
         xhr.addEventListener('error', function() {
-          statusEl.textContent = '❌ Erro: falha de conexão';
+          statusEl.textContent = i18n.t('errorConnection');
           statusEl.className = 'progress-status error';
           resolve(false);
         });

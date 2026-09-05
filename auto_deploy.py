@@ -324,8 +324,6 @@ def build_ffmpeg(info):
         "--disable-shared",
         "--enable-static",
 
-        "--disable-everything",
-
         "--enable-ffmpeg",
         "--enable-ffprobe",
         "--disable-ffplay",
@@ -342,6 +340,7 @@ def build_ffmpeg(info):
         "--enable-demuxer=avi",
         "--enable-demuxer=image2",
         "--enable-demuxer=webm_dash_manifest",
+        "--enable-demuxer=gif",
 
         "--enable-muxer=image2",
 

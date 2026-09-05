@@ -650,6 +650,48 @@
       border-color: rgba(255, 255, 255, 0.4);
     }
 
+    .lightbox-side-btn {
+      position: fixed;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      color: var(--text-primary);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 20px;
+      z-index: 10010;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      transform: translateX(20px);
+      transition: opacity 0.2s ease, transform 0.2s ease, background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .lightbox-side-btn.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .lightbox-side-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .lightbox-side-btn.active {
+      background: linear-gradient(135deg, #a78bfa, #c084fc);
+      border-color: transparent;
+      box-shadow: 0 8px 25px rgba(167, 139, 250, 0.5);
+    }
+
+    .lightbox-autoplay-btn {
+      top: 84px;
+    }
+
+    .lightbox-shuffle-btn {
+      top: 148px;
+    }
+
     /* Loading Indicator */
     .lightbox-loader {
       position: fixed;
@@ -919,33 +961,273 @@
         max-width: none;
       }
     }
+
+    .lang-switch {
+      position: fixed;
+      top: 18px;
+      right: 20px;
+      display: flex;
+      gap: 6px;
+      font-size: 0.8em;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      z-index: 20;
+    }
+
+    .lang-switch button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      opacity: 0.5;
+      cursor: pointer;
+      padding: 4px 6px;
+      font-size: 1em;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+
+    .lang-switch button.active {
+      color: var(--accent-hover);
+      opacity: 1;
+    }
+
+    .lang-switch button:hover {
+      opacity: 1;
+    }
+
+    .lang-switch span {
+      color: var(--text-secondary);
+      opacity: 0.3;
+    }
+
+    /* Context menu (right-click on media cards) */
+    .ctx-menu {
+      position: fixed;
+      z-index: 5000;
+      min-width: 210px;
+      background: linear-gradient(135deg, rgba(28, 24, 37, 0.98) 0%, rgba(19, 17, 28, 0.98) 100%);
+      backdrop-filter: blur(16px);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 1px rgba(167, 139, 250, 0.5);
+      padding: 8px;
+      opacity: 0;
+      transform: scale(0.96);
+      animation: ctxMenuIn 0.12s ease forwards;
+    }
+
+    @keyframes ctxMenuIn {
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .ctx-menu-item {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .ctx-menu-item:hover {
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+    }
+
+    .ctx-menu-item.danger {
+      color: #f87171;
+    }
+
+    .ctx-menu-item.danger:hover {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      color: white;
+    }
+
+    .ctx-menu-sep {
+      height: 1px;
+      margin: 6px 4px;
+      background: var(--border);
+    }
+
+    /* Rename title modal */
+    .rename-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 6000;
+      background: rgba(10, 10, 15, 0.75);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      animation: renameOverlayIn 0.18s ease forwards;
+    }
+
+    @keyframes renameOverlayIn {
+      to { opacity: 1; }
+    }
+
+    .rename-modal {
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(135deg, rgba(28, 24, 37, 0.98) 0%, rgba(19, 17, 28, 0.98) 100%);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 1px rgba(167, 139, 250, 0.5);
+      padding: 28px;
+      transform: translateY(16px) scale(0.97);
+      opacity: 0;
+      animation: renameModalIn 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      animation-delay: 0.02s;
+    }
+
+    @keyframes renameModalIn {
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .rename-modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .rename-modal-icon {
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      box-shadow: 0 8px 20px rgba(167, 139, 250, 0.35);
+    }
+
+    .rename-modal-header h3 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+
+    .rename-modal label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .rename-modal input {
+      width: 100%;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 13px 16px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.98rem;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .rename-modal input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+    }
+
+    .rename-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .rename-modal-actions button {
+      padding: 12px 22px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rename-modal-actions .rn-cancel {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-secondary);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .rename-modal-actions .rn-cancel:hover {
+      background: rgba(255, 255, 255, 0.14);
+      transform: translateY(-2px);
+    }
+
+    .rename-modal-actions .rn-save {
+      background: linear-gradient(135deg, #34d399, #10b981);
+      color: white;
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    }
+
+    .rename-modal-actions .rn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(16, 185, 129, 0.45);
+    }
+
+    .rename-modal-actions .rn-save:disabled {
+      opacity: 0.7;
+      cursor: default;
+      transform: none;
+    }
+
+    .rename-modal-error {
+      color: #f87171;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .rename-modal-error:not(:empty) {
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
+  <script src="/static/i18n.js"></script>
 
   <header class="site-header">
     <h1>Wireless Drive</h1>
     <nav>
-      <a href="/website/upload" id="uploadLink">📤 Upload</a>
-      <a href="#" id="logoutBtn">🚪 Sair</a>
+      <a href="/website/upload" id="uploadLink" data-i18n="navUpload">📤 Upload</a>
+      <a href="#" id="logoutBtn" data-i18n="navLogout">🚪 Sair</a>
     </nav>
   </header>
 
   <main class="container">
     <section class="controls">
       <button id="toggleView">
-        <span id="viewIcon">☰</span> Alternar Visualização
+        <span id="viewIcon">☰</span> <span id="toggleViewLabel" data-i18n="viewToggleToCompact">Alternar Visualização</span>
       </button>
       <button id="toggleSortBtn">
-        <span id="sortIcon">📅</span> Data
+        <span id="sortIcon">📅</span> <span id="sortLabel" data-i18n="sortByDate">Data</span>
       </button>
       <button id="generateThumbnailsBtn">
-        <span>🖼️</span> Gerar Thumbnails
+        <span data-i18n="btnGenerateThumbnails">Gerar Thumbnails</span>
       </button>
       <div class="search-box" id="searchBox">
         <span class="search-icon">🔍</span>
-        <input type="text" id="searchInput" placeholder="Pesquisar mídias..." autocomplete="off">
-        <button type="button" class="search-clear" id="searchClear" aria-label="Limpar pesquisa">✕</button>
+        <input type="text" id="searchInput" placeholder="Pesquisar mídias..." autocomplete="off" data-i18n-placeholder="searchPlaceholder">
+        <button type="button" class="search-clear" id="searchClear" aria-label="Limpar pesquisa" data-i18n-aria="searchClearAria">✕</button>
       </div>
     </section>
 
@@ -978,7 +1260,7 @@
       toast.innerHTML =
         '<div class="app-toast-icon">' + (icons[type] || icons.info) + '</div>' +
         '<div class="app-toast-message"></div>' +
-        '<button type="button" class="app-toast-close" aria-label="Fechar">✕</button>';
+        '<button type="button" class="app-toast-close" aria-label="' + i18n.t('toastCloseAria') + '">✕</button>';
       toast.querySelector('.app-toast-message').textContent = message;
 
       container.appendChild(toast);
@@ -1010,8 +1292,8 @@
 
       showAppAlert(
         status === 403
-          ? 'Você não tem permissão para acessar isso. Redirecionando para o login...'
-          : 'Sua sessão expirou. Redirecionando para o login...',
+          ? i18n.t('authForbidden')
+          : i18n.t('authExpired'),
         'warning'
       );
 
@@ -1083,16 +1365,30 @@
       var sorted = sortMedias(filtered);
 
       if (allMedias.length > 0 && filtered.length === 0) {
-        gallery.innerHTML = '<p>Nenhuma mídia encontrada para "' + searchQuery + '".</p>';
+        gallery.innerHTML = '<p>' + i18n.t('noResultsFor') + ' "' + searchQuery + '".</p>';
         return;
       }
 
       renderMedias(sorted);
     }
 
+    // Persists the currently displayed media order to localStorage so that
+    // media.html can navigate from one media to the next/previous (autoplay).
+    function savePlaylistToStorage(medias) {
+      try {
+        var playlist = medias.map(function(m) {
+          return { id: m.ID, type: m.Type };
+        });
+        localStorage.setItem('wd_mediaPlaylist', JSON.stringify(playlist));
+      } catch (e) {
+        console.error('Failed to save media playlist:', e);
+      }
+    }
+
     // Render medias to gallery from sorted array
     function renderMedias(medias) {
       gallery.innerHTML = '';
+      savePlaylistToStorage(medias);
       medias.forEach(function(media) {
         // Construir URL do arquivo baseado no tipo
         var fileUrl = '/api/media/' + media.ID + '/file';
@@ -1139,7 +1435,18 @@
 
         var p = document.createElement('p');
         p.className = 'muted';
-        p.textContent = media.CreatedAt;
+        p.dataset.createdAt = media.CreatedAt;
+        var date = new Date(media.CreatedAt);
+        if (!isNaN(date.getTime())) {
+          var opts = { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' };
+          try {
+            p.textContent = date.toLocaleString(i18n.locale, opts);
+          } catch (e) {
+            p.textContent = date.toLocaleDateString(i18n.locale);
+          }
+        } else {
+          p.textContent = media.CreatedAt;
+        }
 
         meta.appendChild(h3);
         meta.appendChild(p);
@@ -1167,12 +1474,12 @@
             // Filter (if searching), sort and render
             applyFiltersAndRender();
           } else {
-            gallery.innerHTML = '<p>Sem mídias ainda. Faça um <a href="/website/upload">upload</a>.</p>';
+            gallery.innerHTML = '<p>' + i18n.t('noMediaYet') + ' <a href="/website/upload">' + i18n.t('uploadCta') + '</a>.</p>';
           }
         })
         .catch(function(err) {
-          console.error('Erro ao carregar mídias:', err);
-          gallery.innerHTML = '<p>Erro ao carregar mídias. <a href="/website/upload">Faça um upload</a>.</p>';
+          console.error('Failed to load media:', err);
+          gallery.innerHTML = '<p>' + i18n.t('loadMediaError') + ' <a href="/website/upload">' + i18n.t('uploadCta') + '</a>.</p>';
         });
     }
 
@@ -1194,17 +1501,18 @@
     (function(){
       var btn = document.getElementById('toggleView');
       var gallery = document.getElementById('gallery');
-      var mode = 'grid';
+      var storedMode = localStorage.getItem('wd_viewMode');
+      var mode = (storedMode === 'compact' || storedMode === 'grid') ? storedMode : 'grid';
 
       function apply(){
         if(mode === 'compact'){
           gallery.classList.remove('grid');
           gallery.classList.add('compact');
-          btn.innerHTML = '<span id="viewIcon">▦</span> Ver como Grid';
+          btn.innerHTML = '<span id="viewIcon">▦</span> ' + i18n.t('viewToggleToGrid');
         } else {
           gallery.classList.remove('compact');
           gallery.classList.add('grid');
-          btn.innerHTML = '<span id="viewIcon">☰</span> Ver como Grade Compacta';
+          btn.innerHTML = '<span id="viewIcon">☰</span> ' + i18n.t('viewToggleToCompact');
         }
       }
 
@@ -1212,16 +1520,18 @@
         // animations removed
       }
 
+      document.addEventListener('i18n:change', apply);
+
       function formatDates(){
         document.querySelectorAll('#gallery .card .muted').forEach(function(el){
-          var txt = el.textContent.trim();
-          var d = new Date(txt);
+          var raw = el.dataset.createdAt || el.textContent.trim();
+          var d = new Date(raw);
           if(!isNaN(d.getTime())){
             var opts = { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' };
             try{
-              el.textContent = d.toLocaleString(undefined, opts);
+              el.textContent = d.toLocaleString(i18n.locale, opts);
             }catch(e){
-              el.textContent = d.toLocaleDateString();
+              el.textContent = d.toLocaleDateString(i18n.locale);
             }
           }
         });
@@ -1242,6 +1552,7 @@
       if(btn){
         btn.addEventListener('click', function(){
           mode = (mode === 'grid' ? 'compact' : 'grid');
+          localStorage.setItem('wd_viewMode', mode);
           apply();
           formatDates();
 
@@ -1269,6 +1580,89 @@
       var lb_fullscreenChangeHandler = null;
       var lb_pointerDownX = null;
 
+      var lb_navPlaylist = [];
+      var lb_navIndex = -1;
+      var lb_currentType = null;
+      var lb_currentID = null;
+      var lb_autoplayEnabled = localStorage.getItem('wd_autoplayEnabled') === 'true';
+      var lb_shuffleEnabled = localStorage.getItem('wd_shuffleEnabled') === 'true';
+      var lb_autoAdvanceTimer = null;
+      var lb_autoplayBtnEl = null;
+      var lb_shuffleBtnEl = null;
+      var LB_AUTOPLAY_IMAGE_DELAY_MS = 6000;
+
+      function getStoredPlaylist() {
+        try {
+          var raw = localStorage.getItem('wd_mediaPlaylist');
+          if (!raw) return [];
+          var parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function getSameTypePlaylist(type) {
+        return getStoredPlaylist().filter(function(item) {
+          return item.type === type;
+        });
+      }
+
+      function findPlaylistIndex(list, id) {
+        var idStr = String(id);
+        for (var i = 0; i < list.length; i++) {
+          if (String(list[i].id) === idStr) return i;
+        }
+        return -1;
+      }
+
+      function clearLightboxAutoAdvance() {
+        if (lb_autoAdvanceTimer) {
+          clearTimeout(lb_autoAdvanceTimer);
+          lb_autoAdvanceTimer = null;
+        }
+      }
+
+      function setupLightboxAutoAdvance(type) {
+        clearLightboxAutoAdvance();
+        if (!lb_autoplayEnabled || lb_navPlaylist.length <= 1) return;
+
+        if (type === 'image') {
+          lb_autoAdvanceTimer = setTimeout(function() {
+            lightboxGoToNext();
+          }, LB_AUTOPLAY_IMAGE_DELAY_MS);
+        }
+      }
+
+      function pickNextLightboxItem() {
+        if (lb_navPlaylist.length <= 1) return null;
+
+        if (lb_shuffleEnabled) {
+          var idx;
+          do {
+            idx = Math.floor(Math.random() * lb_navPlaylist.length);
+          } while (idx === lb_navIndex);
+          return lb_navPlaylist[idx];
+        }
+
+        var nextIndex = lb_navIndex >= 0 ? (lb_navIndex + 1) % lb_navPlaylist.length : 0;
+        return lb_navPlaylist[nextIndex];
+      }
+
+      function lightboxGoToNext() {
+        if (!currentLightbox) return;
+        var nextItem = pickNextLightboxItem();
+        if (!nextItem) return;
+
+        lb_navIndex = findPlaylistIndex(lb_navPlaylist, nextItem.id);
+        lb_currentType = nextItem.type;
+        lb_currentID = nextItem.id;
+
+        var overlay = currentLightbox;
+        var content = overlay.querySelector('.lightbox-content');
+        loadLightboxMedia(nextItem.type, nextItem.id, overlay, content);
+      }
+
       function onKeyClose(e){ if(e.key === 'Escape') closeLightbox(); }
 
       function createLoader() {
@@ -1277,8 +1671,8 @@
         loader.innerHTML = `
           <div class="lightbox-spinner"></div>
           <div>
-            <div class="lightbox-loader-text">Carregando mídia...</div>
-            <div class="lightbox-loader-subtext">Aguarde enquanto a mídia é transferida</div>
+            <div class="lightbox-loader-text">${i18n.t('lightboxLoading')}</div>
+            <div class="lightbox-loader-subtext">${i18n.t('lightboxLoadingSub')}</div>
           </div>
         `;
         return loader;
@@ -1289,11 +1683,11 @@
         errorDiv.className = 'lightbox-error';
         errorDiv.innerHTML = `
           <div class="lightbox-error-icon">⚠️</div>
-          <div class="lightbox-error-title">Erro ao Carregar</div>
+          <div class="lightbox-error-title">${i18n.t('errorTitle')}</div>
           <div class="lightbox-error-message">${errorMsg}</div>
           <div class="lightbox-error-actions">
-            <button class="retry-btn">↻ Tentar Novamente</button>
-            <button class="close-btn">Fechar</button>
+            <button class="retry-btn">${i18n.t('retryBtn')}</button>
+            <button class="close-btn">${i18n.t('closeBtn')}</button>
           </div>
         `;
         var retryBtn = errorDiv.querySelector('.retry-btn');
@@ -1331,7 +1725,7 @@
           // reaches this point, it's a different issue -- network outage,
           // 404, 500, etc.
           var errorState = createErrorState(
-            'Não foi possível carregar o vídeo. Tente novamente.',
+            i18n.t('errorVideo'),
             function() { openLightboxWithLoading('video', mediaID); }
           );
           overlay.appendChild(errorState);
@@ -1368,7 +1762,7 @@
               mediaEl.load();
             })
             .catch(function(err) {
-              console.error('Erro ao renovar a URL de streaming:', err);
+              console.error('Failed to renew streaming URL:', err);
               showUnrecoverable();
             })
             .finally(function() {
@@ -1410,6 +1804,178 @@
         });
       }
 
+      var lb_lastBlobUrl = null;
+
+      function loadLightboxMedia(type, mediaID, overlay, content) {
+        var oldError = overlay.querySelector('.lightbox-error');
+        if (oldError && oldError.parentNode) oldError.parentNode.removeChild(oldError);
+        var oldLoader = overlay.querySelector('.lightbox-loader');
+        if (oldLoader && oldLoader.parentNode) oldLoader.parentNode.removeChild(oldLoader);
+
+        clearLightboxAutoAdvance();
+
+        var loader = createLoader();
+        overlay.insertBefore(loader, content);
+        content.style.display = 'none';
+
+        // Load media from server
+        if (type === 'video') {
+
+          // Get temporary stream url
+          authFetch('/api/media/' + mediaID + '/stream-url')
+            .then(function(resp) {
+
+              if (!resp.ok) {
+                throw new Error('Failed to obtain stream URL');
+              }
+
+              return resp.json();
+
+            })
+            .then(function(streamData) {
+
+              // Check if lightbox is still open
+              if(currentLightbox !== overlay) return;
+
+
+              var media = document.createElement('video');
+
+              media.src = API_URL + streamData.url;
+              media.controls = true;
+              media.autoplay = true;
+              media.playsInline = true;
+              media.preload = "metadata";
+
+              media.style.display = 'block';
+
+
+              // Clears the last content
+              content.innerHTML = '';
+              content.appendChild(media);
+
+              attachStreamRecovery(media, mediaID, overlay);
+
+              media.addEventListener('ended', function() {
+                if (lb_autoplayEnabled) lightboxGoToNext();
+              });
+
+
+              // Remove loader and show content
+              if(loader && loader.parentNode) {
+                loader.parentNode.removeChild(loader);
+              }
+
+              content.style.display = 'flex';
+
+              setupLightboxAutoAdvance(type);
+
+            })
+            .catch(function(err) {
+
+              console.error('Failed to load video:', err);
+
+
+              // Check if lightbox is still open
+              if(currentLightbox !== overlay) return;
+
+
+              if(loader && loader.parentNode) {
+                loader.parentNode.removeChild(loader);
+              }
+
+
+              var errorState = createErrorState(
+                i18n.t('errorMedia'),
+                function() {
+                  loadLightboxMedia(type, mediaID, overlay, content);
+                }
+              );
+
+
+              overlay.appendChild(errorState);
+
+            });
+
+
+        } else if (type === 'image') {
+
+          // Image still uses blob
+          authFetch('/api/media/' + mediaID + '/file')
+            .then(function(resp) {
+
+              if (!resp.ok) {
+                throw new Error('Failed to load media');
+              }
+
+              return resp.blob();
+
+            })
+            .then(function(blob) {
+
+              // Check if lightbox is still open
+              if(currentLightbox !== overlay) return;
+
+
+              if (lb_lastBlobUrl) {
+                window.URL.revokeObjectURL(lb_lastBlobUrl);
+              }
+
+              var blobUrl = window.URL.createObjectURL(blob);
+              lb_lastBlobUrl = blobUrl;
+
+              var media = document.createElement('img');
+
+              media.src = blobUrl;
+              media.alt = '';
+
+              media.style.display = 'block';
+
+
+              // Clears the last content
+              content.innerHTML = '';
+              content.appendChild(media);
+
+
+              // Remove loader and show content
+              if(loader && loader.parentNode) {
+                loader.parentNode.removeChild(loader);
+              }
+
+              content.style.display = 'flex';
+
+              setupLightboxAutoAdvance(type);
+
+            })
+            .catch(function(err) {
+
+              console.error('Failed to load image:', err);
+
+
+              // Check if lightbox is still open
+              if(currentLightbox !== overlay) return;
+
+
+              if(loader && loader.parentNode) {
+                loader.parentNode.removeChild(loader);
+              }
+
+
+              var errorState = createErrorState(
+                i18n.t('errorMedia'),
+                function() {
+                  loadLightboxMedia(type, mediaID, overlay, content);
+                }
+              );
+
+
+              overlay.appendChild(errorState);
+
+            });
+        } else {
+          closeLightbox();
+        }
+      }
+
       function openLightboxWithLoading(type, mediaID) {
         closeLightbox();
 
@@ -1418,11 +1984,13 @@
           return;
         }
 
+        lb_navPlaylist = getSameTypePlaylist(type);
+        lb_navIndex = findPlaylistIndex(lb_navPlaylist, mediaID);
+        lb_currentType = type;
+        lb_currentID = mediaID;
+
         var overlay = document.createElement('div');
         overlay.className = 'lightbox-overlay';
-
-        var loader = createLoader();
-        overlay.appendChild(loader);
 
         var content = document.createElement('div');
         content.className = 'lightbox-content';
@@ -1435,13 +2003,42 @@
         closeBtn.addEventListener('click', closeLightbox);
         overlay.appendChild(closeBtn);
 
+        lb_autoplayBtnEl = null;
+        lb_shuffleBtnEl = null;
+
+        if (lb_navPlaylist.length > 1) {
+          lb_autoplayBtnEl = document.createElement('button');
+          lb_autoplayBtnEl.className = 'lightbox-side-btn lightbox-autoplay-btn';
+          lb_autoplayBtnEl.innerHTML = '▶️';
+          lb_autoplayBtnEl.classList.toggle('active', lb_autoplayEnabled);
+          lb_autoplayBtnEl.addEventListener('click', function(e) {
+            e.stopPropagation();
+            lb_autoplayEnabled = !lb_autoplayEnabled;
+            localStorage.setItem('wd_autoplayEnabled', lb_autoplayEnabled ? 'true' : 'false');
+            lb_autoplayBtnEl.classList.toggle('active', lb_autoplayEnabled);
+            setupLightboxAutoAdvance(lb_currentType);
+          });
+          overlay.appendChild(lb_autoplayBtnEl);
+
+          lb_shuffleBtnEl = document.createElement('button');
+          lb_shuffleBtnEl.className = 'lightbox-side-btn lightbox-shuffle-btn';
+          lb_shuffleBtnEl.innerHTML = '🔀';
+          lb_shuffleBtnEl.classList.toggle('active', lb_shuffleEnabled);
+          lb_shuffleBtnEl.addEventListener('click', function(e) {
+            e.stopPropagation();
+            lb_shuffleEnabled = !lb_shuffleEnabled;
+            localStorage.setItem('wd_shuffleEnabled', lb_shuffleEnabled ? 'true' : 'false');
+            lb_shuffleBtnEl.classList.toggle('active', lb_shuffleEnabled);
+          });
+          overlay.appendChild(lb_shuffleBtnEl);
+        }
+
         lb_pointerMoveHandler = function(ev){
           var clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
-          if(clientX > window.innerWidth - 120){
-            closeBtn.classList.add('visible');
-          } else {
-            closeBtn.classList.remove('visible');
-          }
+          var nearEdge = clientX > window.innerWidth - 120;
+          closeBtn.classList.toggle('visible', nearEdge);
+          if (lb_autoplayBtnEl) lb_autoplayBtnEl.classList.toggle('visible', nearEdge);
+          if (lb_shuffleBtnEl) lb_shuffleBtnEl.classList.toggle('visible', nearEdge);
         };
 
         lb_pointerDownHandler = function(ev){ lb_pointerDownX = ev.touches ? ev.touches[0].clientX : ev.clientX; };
@@ -1474,149 +2071,7 @@
         currentLightbox = overlay;
         document.addEventListener('keydown', onKeyClose);
 
-        // Load media from server
-        if (type === 'video') {
-
-          // Get temporary stream url
-          authFetch('/api/media/' + mediaID + '/stream-url')
-            .then(function(resp) {
-
-              if (!resp.ok) {
-                throw new Error('Erro ao obter URL de streaming');
-              }
-
-              return resp.json();
-
-            })
-            .then(function(streamData) {
-
-              // Check if lightbox is still open
-              if(currentLightbox !== overlay) return;
-
-
-              var media = document.createElement('video');
-
-              media.src = API_URL + streamData.url;
-              media.controls = true;
-              media.autoplay = true;
-              media.playsInline = true;
-              media.preload = "metadata";
-
-              media.style.display = 'block';
-
-
-              // Clears the last content
-              content.innerHTML = '';
-              content.appendChild(media);
-
-              attachStreamRecovery(media, mediaID, overlay);
-
-
-              // Remove loader and show content
-              if(loader && loader.parentNode) {
-                loader.parentNode.removeChild(loader);
-              }
-
-              content.style.display = 'flex';
-
-            })
-            .catch(function(err) {
-
-              console.error('Erro ao carregar vídeo:', err);
-
-
-              // Check if lightbox is still open
-              if(currentLightbox !== overlay) return;
-
-
-              if(loader && loader.parentNode) {
-                loader.parentNode.removeChild(loader);
-              }
-
-
-              var errorState = createErrorState(
-                'Não foi possível carregar a mídia. Verifique sua conexão de internet e tente novamente.',
-                function() {
-                  openLightboxWithLoading(type, mediaID);
-                }
-              );
-
-
-              overlay.appendChild(errorState);
-
-            });
-
-
-        } else if (type === 'image') {
-
-          // Image still uses blob
-          authFetch('/api/media/' + mediaID + '/file')
-            .then(function(resp) {
-
-              if (!resp.ok) {
-                throw new Error('Erro ao carregar mídia');
-              }
-
-              return resp.blob();
-
-            })
-            .then(function(blob) {
-
-              // Check if lightbox is still open
-              if(currentLightbox !== overlay) return;
-
-
-              var blobUrl = window.URL.createObjectURL(blob);
-
-              var media = document.createElement('img');
-
-              media.src = blobUrl;
-              media.alt = '';
-
-              media.style.display = 'block';
-
-
-              // Clears the last content
-              content.innerHTML = '';
-              content.appendChild(media);
-
-
-              // Remove loader and show content
-              if(loader && loader.parentNode) {
-                loader.parentNode.removeChild(loader);
-              }
-
-              content.style.display = 'flex';
-
-            })
-            .catch(function(err) {
-
-              console.error('Erro ao carregar imagem:', err);
-
-
-              // Check if lightbox is still open
-              if(currentLightbox !== overlay) return;
-
-
-              if(loader && loader.parentNode) {
-                loader.parentNode.removeChild(loader);
-              }
-
-
-              var errorState = createErrorState(
-                'Não foi possível carregar a mídia. Verifique sua conexão de internet e tente novamente.',
-                function() {
-                  openLightboxWithLoading(type, mediaID);
-                }
-              );
-
-
-              overlay.appendChild(errorState);
-
-            });
-        } else {
-          closeLightbox();
-        }
+        loadLightboxMedia(type, mediaID, overlay, content);
       }
 
       function closeLightbox(){
@@ -1624,6 +2079,16 @@
         var v = currentLightbox.querySelector('video');
         if(v){ try{ v.pause(); v.removeAttribute('src'); v.load && v.load(); }catch(e){} }
         try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){}
+
+        clearLightboxAutoAdvance();
+        if (lb_lastBlobUrl) {
+          window.URL.revokeObjectURL(lb_lastBlobUrl);
+          lb_lastBlobUrl = null;
+        }
+        lb_autoplayBtnEl = null;
+        lb_shuffleBtnEl = null;
+        lb_navPlaylist = [];
+        lb_navIndex = -1;
 
         if(lb_pointerMoveHandler) document.removeEventListener('mousemove', lb_pointerMoveHandler);
         if(lb_pointerMoveHandler) document.removeEventListener('touchmove', lb_pointerMoveHandler);
@@ -1651,6 +2116,274 @@
 
         openLightboxWithLoading(type, mediaID);
       });
+
+      (function(){
+        var ctxMenu = null;
+
+        function closeCtxMenu(){
+          if (ctxMenu && ctxMenu.parentNode) ctxMenu.parentNode.removeChild(ctxMenu);
+          ctxMenu = null;
+          document.removeEventListener('click', closeCtxMenu);
+          document.removeEventListener('contextmenu', closeCtxMenuOnOtherRightClick, true);
+          document.removeEventListener('keydown', ctxMenuKeyHandler);
+          window.removeEventListener('scroll', closeCtxMenu, true);
+        }
+
+        function closeCtxMenuOnOtherRightClick(ev){
+          closeCtxMenu();
+        }
+
+        function ctxMenuKeyHandler(ev){
+          if (ev.key === 'Escape') closeCtxMenu();
+        }
+
+        function ctxMenuItem(label, onClick, opts){
+          opts = opts || {};
+          var item = document.createElement('div');
+          item.className = 'ctx-menu-item' + (opts.danger ? ' danger' : '');
+          item.textContent = label;
+          item.addEventListener('click', function(e){
+            e.stopPropagation();
+            closeCtxMenu();
+            onClick();
+          });
+          return item;
+        }
+
+        function downloadMedia(media){
+          authFetch('/api/media/' + media.ID + '/stream-url?type=download')
+            .then(function(resp){ return resp.json(); })
+            .then(function(streamData){
+              window.location.href = API_URL + streamData.url;
+            })
+            .catch(function(err){
+              showAppAlert(i18n.t('errorDownloadFile') + err.message, 'error');
+            });
+        }
+
+        function renameMedia(media){
+          var overlay = document.createElement('div');
+          overlay.className = 'rename-overlay';
+
+          var modal = document.createElement('div');
+          modal.className = 'rename-modal';
+
+          var header = document.createElement('div');
+          header.className = 'rename-modal-header';
+          header.innerHTML = '<span class="rename-modal-icon">✏️</span><h3>' + i18n.t('editTitleTooltip') + '</h3>';
+
+          var label = document.createElement('label');
+          label.textContent = i18n.t('labelTitle');
+
+          var input = document.createElement('input');
+          input.type = 'text';
+          input.maxLength = 255;
+          input.value = media.Title || '';
+
+          var errorEl = document.createElement('div');
+          errorEl.className = 'rename-modal-error';
+
+          var actions = document.createElement('div');
+          actions.className = 'rename-modal-actions';
+
+          var cancelBtn = document.createElement('button');
+          cancelBtn.className = 'rn-cancel';
+          cancelBtn.type = 'button';
+          cancelBtn.textContent = i18n.t('btnCancel');
+
+          var saveBtn = document.createElement('button');
+          saveBtn.className = 'rn-save';
+          saveBtn.type = 'button';
+          saveBtn.innerHTML = i18n.t('btnSave');
+
+          actions.appendChild(cancelBtn);
+          actions.appendChild(saveBtn);
+
+          modal.appendChild(header);
+          modal.appendChild(label);
+          modal.appendChild(input);
+          modal.appendChild(errorEl);
+          modal.appendChild(actions);
+          overlay.appendChild(modal);
+          document.body.appendChild(overlay);
+
+          input.focus();
+          input.select();
+
+          function close(){
+            document.removeEventListener('keydown', onKeyDown);
+            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+          }
+
+          function onKeyDown(ev){
+            if (ev.key === 'Escape') close();
+            if (ev.key === 'Enter') save();
+          }
+
+          function save(){
+            var newTitle = input.value.trim();
+            if (!newTitle) {
+              errorEl.textContent = i18n.t('errorTitleEmpty');
+              input.focus();
+              return;
+            }
+            errorEl.textContent = '';
+            saveBtn.disabled = true;
+            var originalLabel = saveBtn.innerHTML;
+            saveBtn.innerHTML = '⏳ ' + i18n.t('btnSaving');
+
+            authFetch('/api/media/' + media.ID, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ title: newTitle })
+            })
+              .then(function(resp){
+                return resp.json().then(function(data){
+                  if (!resp.ok) throw new Error(data.error || data.message || i18n.t('errorUpdateMedia'));
+                  return data;
+                });
+              })
+              .then(function(){
+                saveBtn.innerHTML = '✅ ' + i18n.t('btnSaved');
+                setTimeout(function(){
+                  close();
+                  loadMedias();
+                }, 500);
+              })
+              .catch(function(err){
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalLabel;
+                errorEl.textContent = i18n.t('errorUpdateMedia') + err.message;
+              });
+          }
+
+          cancelBtn.addEventListener('click', close);
+          saveBtn.addEventListener('click', save);
+          overlay.addEventListener('mousedown', function(ev){
+            if (ev.target === overlay) close();
+          });
+          document.addEventListener('keydown', onKeyDown);
+        }
+
+        function generateThumbForMedia(media){
+          authFetch('/api/media/' + media.ID + '/generate-thumbnail', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          })
+            .then(function(resp){
+              return resp.json().then(function(data){
+                if (!resp.ok) throw new Error(data.error || data.message || i18n.t('errorGenerateThumb'));
+                return data;
+              });
+            })
+            .then(function(){
+              loadMedias();
+            })
+            .catch(function(err){
+              showAppAlert(i18n.t('errorGenerateThumb') + err.message, 'error');
+            });
+        }
+
+        function deleteThumbForMedia(media){
+          if (!confirm(i18n.t('confirmDeleteThumb'))) return;
+          authFetch('/api/media/' + media.ID + '/delete-thumbnail', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          })
+            .then(function(resp){
+              return resp.json().then(function(data){
+                if (!resp.ok) throw new Error(data.error || data.message || i18n.t('errorDeleteThumb'));
+                return data;
+              });
+            })
+            .then(function(){
+              loadMedias();
+            })
+            .catch(function(err){
+              showAppAlert(i18n.t('errorDeleteThumb') + err.message, 'error');
+            });
+        }
+
+        function deleteMediaFromCtx(media){
+          if (!confirm(i18n.t('confirmDeleteMedia'))) return;
+          authFetch('/api/media/' + media.ID, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+          })
+            .then(function(resp){ return resp.json(); })
+            .then(function(data){
+              if (data && data.message) {
+                loadMedias();
+              } else {
+                showAppAlert(i18n.t('errorDelete'), 'error');
+              }
+            })
+            .catch(function(err){
+              showAppAlert(i18n.t('errorDeleteWithMsg') + err.message, 'error');
+            });
+        }
+
+        document.addEventListener('contextmenu', function(ev){
+          var card = ev.target.closest('a.card');
+          if (!card) return;
+          ev.preventDefault();
+
+          var id = card.getAttribute('data-id');
+          var media = allMedias.find(function(m){ return String(m.ID) === String(id); });
+          if (!media) return;
+
+          closeCtxMenu();
+
+          ctxMenu = document.createElement('div');
+          ctxMenu.className = 'ctx-menu';
+
+          ctxMenu.appendChild(ctxMenuItem(i18n.t('btnDownload'), function(){
+            downloadMedia(media);
+          }));
+
+          ctxMenu.appendChild(ctxMenuItem('✏️ ' + i18n.t('editTitleTooltip'), function(){
+            renameMedia(media);
+          }));
+
+          if (media.Type === 'image' || media.Type === 'video') {
+            ctxMenu.appendChild(ctxMenuItem(i18n.t('btnGenerateThumbnail'), function(){
+              generateThumbForMedia(media);
+            }));
+
+            if (media.Thumbnail) {
+              ctxMenu.appendChild(ctxMenuItem(i18n.t('btnDeleteThumbnail'), function(){
+                deleteThumbForMedia(media);
+              }));
+            }
+          }
+
+          var sep = document.createElement('div');
+          sep.className = 'ctx-menu-sep';
+          ctxMenu.appendChild(sep);
+
+          ctxMenu.appendChild(ctxMenuItem(i18n.t('deleteLink'), function(){
+            deleteMediaFromCtx(media);
+          }, { danger: true }));
+
+          document.body.appendChild(ctxMenu);
+
+          var menuWidth = ctxMenu.offsetWidth;
+          var menuHeight = ctxMenu.offsetHeight;
+          var x = ev.clientX;
+          var y = ev.clientY;
+          if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 8;
+          if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 8;
+          ctxMenu.style.left = Math.max(8, x) + 'px';
+          ctxMenu.style.top = Math.max(8, y) + 'px';
+
+          setTimeout(function(){
+            document.addEventListener('click', closeCtxMenu);
+            document.addEventListener('contextmenu', closeCtxMenuOnOtherRightClick, true);
+            document.addEventListener('keydown', ctxMenuKeyHandler);
+            window.addEventListener('scroll', closeCtxMenu, true);
+          }, 0);
+        });
+      })();
 
       // Logout handler
       var logoutBtn = document.getElementById('logoutBtn');
@@ -1680,21 +2413,21 @@
       if (sortBtn) {
         function updateSortButtonText() {
           var icon = '📅';
-          var label = 'Data';
+          var label = i18n.t('sortByDate');
 
           switch(sortMode) {
             case 'asc':
               icon = '🔤';
-              label = 'A→Z';
+              label = i18n.t('sortAsc');
               break;
             case 'desc':
               icon = '🔡';
-              label = 'Z→A';
+              label = i18n.t('sortDesc');
               break;
             case 'date':
             default:
               icon = '📅';
-              label = 'Data';
+              label = i18n.t('sortByDate');
           }
 
           sortBtn.innerHTML = '<span id="sortIcon">' + icon + '</span> ' + label;
@@ -1723,6 +2456,7 @@
           }
         });
 
+        document.addEventListener('i18n:change', updateSortButtonText);
       }
 
       // Search handler
@@ -1753,19 +2487,19 @@
       const btn = document.getElementById('generateThumbnailsBtn');
       const originalText = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = '<span>⏳</span> Gerando...';
+      btn.innerHTML = '<span>⏳</span> ' + i18n.t('btnGeneratingThumbnails');
 
       // Search for medias without thumbnail
       authFetch('/api/media/owner/missing-thumbnails')
         .then(function(resp) {
           if (!resp.ok) {
-            throw new Error('Erro na resposta do servidor: ' + resp.status);
+            throw new Error(i18n.t('errorServerResponse') + ' ' + resp.status);
           }
           return resp.json();
         })
         .then(function(data) {
           if (data.count === 0) {
-            showAppAlert('Todas as mídias já possuem thumbnails!', 'info');
+            showAppAlert(i18n.t('allThumbnailsExist'), 'info');
             btn.disabled = false;
             btn.innerHTML = originalText;
             return;
@@ -1780,13 +2514,13 @@
             })
             .then(function(resp) {
               if (!resp.ok) {
-                throw new Error('Erro ao gerar thumbnail');
+                throw new Error(i18n.t('errorGeneratingThumbnails'));
               }
               return resp.json();
             })
             .catch(function(err) {
-              console.error('Erro ao gerar thumbnail para ' + media.Title + ':', err);
-              showAppAlert('Erro ao gerar thumbnail para ' + media.Title, 'error')
+              console.error('Failed to generate thumbnail for ' + media.Title + ':', err);
+              showAppAlert(i18n.t('errorGeneratingThumbnailFor') + ' ' + media.Title, 'error')
               return null;
             });
           });
@@ -1801,8 +2535,8 @@
           });
         })
         .catch(function(err) {
-          console.error('Erro ao gerar thumbnails:', err);
-          showAppAlert('Impossível gerar thumbnails, servidor indisponível ou erro inesperado', 'error');
+          console.error('Failed to generate thumbnails:', err);
+          showAppAlert(i18n.t('errorGeneratingThumbnails'), 'error');
           btn.disabled = false;
           btn.innerHTML = originalText;
         });
