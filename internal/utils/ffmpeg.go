@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"wireless_drive/internal/config"
 )
 
@@ -52,20 +53,62 @@ func GenerateImageThumbnail(inputPath, outputPath string) error {
 	return nil
 }
 
+func getVideoDuration(inputPath string) (float64, error) {
+	cmd := exec.Command(
+		ffprobePath,
+		"-v", "error",
+		"-show_entries", "format=duration",
+		"-of", "default=noprint_wrappers=1:nokey=1",
+		inputPath,
+	)
+
+	output, err := cmd.Output()
+	if err != nil {
+		return 0, fmt.Errorf("error getting video duration: %w", err)
+	}
+
+	duration, err := strconv.ParseFloat(strings.TrimSpace(string(output)), 64)
+	if err != nil {
+		return 0, fmt.Errorf("error parsing video duration: %w", err)
+	}
+
+	return duration, nil
+}
+
 // GenerateVideoThumbnail generates a thumbnail for videos from the first second
 func GenerateVideoThumbnail(inputPath, outputPath string) error {
+	duration, err := getVideoDuration(inputPath)
+	if err != nil {
+		return fmt.Errorf("error getting video duration: %w", err)
+	}
+
+	thumbnailTimestamp := videoThumbnailTimestamp
+
+	// Use the first frame when the video is shorter than the configured timestamp.
+	if duration < 5 {
+		thumbnailTimestamp = "00:00:00"
+	}
+
 	cmd := exec.Command(ffmpegPath,
 		"-i", inputPath,
-		"-ss", videoThumbnailTimestamp,
-		"-vf", fmt.Sprintf("scale=%d:%d:force_original_aspect_ratio=decrease", thumbnailWidth, thumbnailHeight),
+		"-ss", thumbnailTimestamp,
+		"-vf", fmt.Sprintf(
+			"scale=%d:%d:force_original_aspect_ratio=decrease,format=yuvj420p",
+			thumbnailWidth,
+			thumbnailHeight,
+		),
 		"-vframes", "1",
-		"-y", // Overwrite output file
+		"-y",
 		outputPath,
 	)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("error generating video thumbnail: %w; ffmpeg output: %s", err, string(output))
+		return fmt.Errorf(
+			"error generating video thumbnail: %w; ffmpeg output: %s",
+			err,
+			string(output),
+		)
 	}
 
 	return nil
