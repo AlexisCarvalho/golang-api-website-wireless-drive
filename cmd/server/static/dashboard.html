@@ -2378,6 +2378,7 @@
             })
             .then(function(){
               loadMedias();
+              loadDiskUsage();
             })
             .catch(function(err){
               showAppAlert(i18n.t('errorGenerateThumb') + err.message, 'error');
@@ -2398,6 +2399,7 @@
             })
             .then(function(){
               loadMedias();
+              loadDiskUsage();
             })
             .catch(function(err){
               showAppAlert(i18n.t('errorDeleteThumb') + err.message, 'error');
@@ -2414,6 +2416,7 @@
             .then(function(data){
               if (data && data.message) {
                 loadMedias();
+                loadDiskUsage();
               } else {
                 showAppAlert(i18n.t('errorDelete'), 'error');
               }
