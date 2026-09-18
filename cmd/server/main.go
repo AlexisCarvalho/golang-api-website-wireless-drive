@@ -84,6 +84,7 @@ func main() {
 	mediaRepo := repository.NewMediaRepository(config.DB)
 	mediaService := service.NewMediaService(mediaRepo)
 	mediaHandler := handler.NewMediaHandler(mediaService)
+	storageHandler := handler.NewStorageHandler()
 
 	// =========================
 	// API ENDPOINTS (registered before page routes)
@@ -91,6 +92,7 @@ func main() {
 
 	userHandler.RegisterRoutes(r)
 	mediaHandler.RegisterRoutes(r)
+	storageHandler.RegisterRoutes(r)
 
 	// =========================
 	// PAGE ROUTES (after API to avoid intercepting API calls)

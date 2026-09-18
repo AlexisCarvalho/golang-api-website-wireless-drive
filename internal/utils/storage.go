@@ -4,8 +4,16 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"syscall"
 	"wireless_drive/internal/config"
 )
+
+type DiskUsage struct {
+	SizeBytes  uint64 `json:"sizeBytes"`
+	UsedBytes  uint64 `json:"usedBytes"`
+	AvailBytes uint64 `json:"availBytes"`
+	UsePercent int    `json:"usePercent"`
+}
 
 type FileType string
 
@@ -148,4 +156,40 @@ func GenerateThumbnailName(filename string) string {
 	ext := filepath.Ext(filename)
 	nameWithoutExt := filename[:len(filename)-len(ext)]
 	return fmt.Sprintf("thumb_%s.jpg", nameWithoutExt)
+}
+
+func GetDiskUsage(path string) (*DiskUsage, error) {
+	var stat syscall.Statfs_t
+
+	if err := syscall.Statfs(path, &stat); err != nil {
+		return nil, fmt.Errorf("failed to get filesystem information for %q: %w", path, err)
+	}
+
+	blockSize := uint64(stat.Bsize)
+
+	total := stat.Blocks * blockSize
+	free := stat.Bfree * blockSize
+	available := stat.Bavail * blockSize
+
+	used := total - free
+
+	var usePercent int
+	if total > 0 {
+		usePercent = int((used * 100) / total)
+	}
+
+	return &DiskUsage{
+		SizeBytes:  total,
+		UsedBytes:  used,
+		AvailBytes: available,
+		UsePercent: usePercent,
+	}, nil
+}
+
+func GetDataDiskUsage() (*DiskUsage, error) {
+	if basePath == "" {
+		return nil, fmt.Errorf("BASE_PATH is not configured")
+	}
+
+	return GetDiskUsage(basePath)
 }

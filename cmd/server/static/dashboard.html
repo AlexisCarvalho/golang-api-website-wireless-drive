@@ -1200,6 +1200,60 @@
     .rename-modal-error:not(:empty) {
       margin-top: 8px;
     }
+
+    .disk-usage {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 18px;
+      background: rgba(28, 24, 37, 0.9);
+      backdrop-filter: blur(10px);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .disk-usage-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .disk-usage-track {
+      position: relative;
+      width: 90px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .disk-usage-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+      box-shadow: 0 0 8px var(--shadow);
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+    }
+
+    .disk-usage-fill.is-high {
+      background: linear-gradient(90deg, #f59e0b, #f97316);
+      box-shadow: 0 0 8px rgba(249, 115, 22, 0.4);
+    }
+
+    .disk-usage-fill.is-critical {
+      background: linear-gradient(90deg, #ef4444, #f87171);
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+    }
+
+    .disk-usage-values {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -1221,9 +1275,13 @@
       <button id="toggleSortBtn">
         <span id="sortIcon">📅</span> <span id="sortLabel" data-i18n="sortByDate">Data</span>
       </button>
-      <button id="generateThumbnailsBtn">
-        <span data-i18n="btnGenerateThumbnails">Gerar Thumbnails</span>
-      </button>
+      <div class="disk-usage" id="diskUsage" aria-label="Uso de armazenamento">
+        <span class="disk-usage-icon">💾</span>
+        <div class="disk-usage-track">
+          <div class="disk-usage-fill" id="diskUsageFill"></div>
+        </div>
+        <span class="disk-usage-values" id="diskUsageValues">Carregando...</span>
+      </div>
       <div class="search-box" id="searchBox">
         <span class="search-icon">🔍</span>
         <input type="text" id="searchInput" placeholder="Pesquisar mídias..." autocomplete="off" data-i18n-placeholder="searchPlaceholder">
@@ -1483,6 +1541,47 @@
         });
     }
 
+    function formatBytes(bytes) {
+      if (!bytes && bytes !== 0) return '--';
+      var units = ['B', 'KB', 'MB', 'GB', 'TB'];
+      var i = 0;
+      var value = bytes;
+      while (value >= 1024 && i < units.length - 1) {
+        value /= 1024;
+        i++;
+      }
+      return value.toFixed(value < 10 && i > 0 ? 2 : 1) + ' ' + units[i];
+    }
+
+    function loadDiskUsage() {
+      var valuesEl = document.getElementById('diskUsageValues');
+      var fillEl = document.getElementById('diskUsageFill');
+
+      authFetch('/api/storage/disk-usage')
+        .then(function(resp) { return resp.json(); })
+        .then(function(data) {
+          var sizeBytes = data.sizeBytes || 0;
+          var usedBytes = data.usedBytes || 0;
+          var usePercent = typeof data.usePercent === 'number'
+            ? data.usePercent
+            : (sizeBytes ? Math.round((usedBytes / sizeBytes) * 100) : 0);
+
+          valuesEl.textContent = formatBytes(usedBytes) + ' / ' + formatBytes(sizeBytes) + ' (' + usePercent + '%)';
+
+          fillEl.style.width = Math.min(100, Math.max(0, usePercent)) + '%';
+          fillEl.classList.remove('is-high', 'is-critical');
+          if (usePercent >= 90) {
+            fillEl.classList.add('is-critical');
+          } else if (usePercent >= 75) {
+            fillEl.classList.add('is-high');
+          }
+        })
+        .catch(function(err) {
+          console.error('Failed to load disk usage:', err);
+          valuesEl.textContent = 'Indisponível';
+        });
+    }
+
     function initializeDashboard() {
       const token = localStorage.getItem('authToken');
 
@@ -1492,6 +1591,7 @@
       }
 
       loadMedias();
+      loadDiskUsage();
     }
 
     window.addEventListener("DOMContentLoaded", function() {
@@ -2397,17 +2497,6 @@
       }
 
 
-
-      // Generate Thumbnails handler
-      var generateThumbnailsBtn = document.getElementById('generateThumbnailsBtn');
-      if (generateThumbnailsBtn) {
-        generateThumbnailsBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          generateMissingThumbnails();
-        });
-
-      }
-
       // Sort mode handler
       var sortBtn = document.getElementById('toggleSortBtn');
       if (sortBtn) {
@@ -2482,65 +2571,6 @@
         });
       }
     })();
-
-    function generateMissingThumbnails() {
-      const btn = document.getElementById('generateThumbnailsBtn');
-      const originalText = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = '<span>⏳</span> ' + i18n.t('btnGeneratingThumbnails');
-
-      // Search for medias without thumbnail
-      authFetch('/api/media/owner/missing-thumbnails')
-        .then(function(resp) {
-          if (!resp.ok) {
-            throw new Error(i18n.t('errorServerResponse') + ' ' + resp.status);
-          }
-          return resp.json();
-        })
-        .then(function(data) {
-          if (data.count === 0) {
-            showAppAlert(i18n.t('allThumbnailsExist'), 'info');
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-            return;
-          }
-
-
-          // Generate the thumbnail of every media missing it
-          var promises = data.medias.map(function(media) {
-            return authFetch('/api/media/' + media.ID + '/generate-thumbnail', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' }
-            })
-            .then(function(resp) {
-              if (!resp.ok) {
-                throw new Error(i18n.t('errorGeneratingThumbnails'));
-              }
-              return resp.json();
-            })
-            .catch(function(err) {
-              console.error('Failed to generate thumbnail for ' + media.Title + ':', err);
-              showAppAlert(i18n.t('errorGeneratingThumbnailFor') + ' ' + media.Title, 'error')
-              return null;
-            });
-          });
-
-          Promise.all(promises).then(function(results) {
-            if(promises != null) {
-              loadMedias();
-            }
-
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-          });
-        })
-        .catch(function(err) {
-          console.error('Failed to generate thumbnails:', err);
-          showAppAlert(i18n.t('errorGeneratingThumbnails'), 'error');
-          btn.disabled = false;
-          btn.innerHTML = originalText;
-        });
-    }
   </script>
 </body>
 </html>
