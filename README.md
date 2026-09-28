@@ -64,6 +64,7 @@ It's meant to replace the manual, step-by-step process for everyday use. The man
       - [Network](#network)
       - [Architecture](#architecture)
     - [Automated Deployment (`auto_deploy.py`)](#automated-deployment-auto_deploypy)
+      - [Further information on Flags](#further-information-on-flags)
       - [What you still need to set up yourself](#what-you-still-need-to-set-up-yourself)
     - [Manual Deployment](#manual-deployment)
       - [Requirements](#requirements)
@@ -212,24 +213,42 @@ See the section **[Checking the Target Phone's Architecture](#checking-the-targe
 
 ### Automated Deployment (`auto_deploy.py`)
 
-`auto_deploy.py` lives at the root of this repository, next to `go.mod`. Running it (`python3 auto_deploy.py`) does the following, in order:
+`auto_deploy.py` lives at the root of this repository, next to `go.mod`. Running it (`python3 auto_deploy.py`) or (`./auto_deploy.py`) does the following, in order:
 
 1. Checks that `go` and `adb` are available in `PATH`.
-2. Lists devices connected via `adb devices` and asks you to pick one if more than one is connected.
+2. Selects the target from `--device` or `ANDROID_SERIAL` when provided. Otherwise, it uses the only ready device, prompts you to choose if multiple devices are connected in an interactive terminal, or requires `--device SERIAL` when running non-interactively.
 3. Reads the device's `ro.product.cpu.abi` and automatically maps it to the correct `GOARCH` and NDK Clang target (see the table below) — no manual editing needed.
 4. Cross-compiles the Go server with `go build ./cmd/server`.
-5. Kills any previously running `WirelessDrive` process on the device.
-6. Creates `/data/local/tmp/wirelessDrive` on the device if it doesn't exist.
-7. Pushes the compiled binary as `WirelessDrive`, and pushes your local `.env` file too — **only if it already exists** next to the script (see the note in [Configuration](#configuration)).
-8. Starts the server on the device in the background via `nohup`.
-9. Asks whether you also want to build and push **FFmpeg/FFprobe** (fully optional, see below).
+5. Optionally builds FFmpeg/FFprobe for the same ABI. In interactive mode, the script asks whether to do this; use `--ffmpeg` or `--no-ffmpeg` to choose without prompting.
+6. Creates `/data/local/tmp/wirelessDrive` on the device if it doesn't exist and uploads the server binary as `WirelessDrive.new`. Any local `.env` file is also uploaded, but only if it already exists next to the script (see the note in [Configuration](#configuration)).
+7. Stops the previous server, then replaces `WirelessDrive.new` with `WirelessDrive` using `mv` to avoid conflicts with a running executable. It starts the updated server in the background via `nohup` and confirms that it is running. Pass `--no-restart` to upload and replace the binary without restarting the server.
+8. Shows the device's local IP address and, when the port is known, tests whether the server is accepting connections.
 
-If you opt into step 9, the script:
+If you opt into the FFmpeg/FFprobe build, the script:
 
 - Looks for a `FFmpeg/` folder next to `auto_deploy.py`. If it's missing, it warns you and offers to clone it directly from https://github.com/FFmpeg/FFmpeg.git — if you decline, or don't have `git` installed, it just skips this part and leaves the rest of the deployment untouched.
-- Runs `make distclean` inside `FFmpeg/` before configuring, since the target architecture may differ from whatever it was last built for (e.g. after switching devices). This is expected to error out harmlessly on a fresh clone that's never been built.
-- Runs the same minimal `./configure` and `make -j$(nproc)` described in [Building FFmpeg for Android](#building-ffmpeg-for-android), using the architecture flags it already detected in step 3.
+- Builds outside the FFmpeg source tree, under `ffmpeg-build/<ABI>/`. If the source revision and build flags match a cached build for that ABI, it reuses those binaries; pass `--ffmpeg-rebuild` to force a rebuild.
+- On a cache miss, runs `make distclean` inside `FFmpeg/` only if a previous in-tree build is present, then configures and builds FFmpeg for the detected ABI. `--ffmpeg-minimal` adds a smaller, more restricted component set; otherwise, it uses the standard component list described in [Building FFmpeg for Android](#building-ffmpeg-for-android).
 - Pushes the resulting `ffmpeg`/`ffprobe` binaries to the device and marks them executable.
+
+#### Further information on Flags
+```bash
+./auto_deploy.py                           # interactive mode
+./auto_deploy.py --no-ffmpeg               # deploy without building FFmpeg/FFprobe
+./auto_deploy.py -s emulator-5554          # select a specific ADB device
+./auto_deploy.py --ffmpeg                  # build FFmpeg/FFprobe without prompting
+./auto_deploy.py --ffmpeg-minimal          # choose the smaller build (interactive prompt)
+./auto_deploy.py --ffmpeg --ffmpeg-minimal # build the smaller version without prompting
+```
+
+`--ffmpeg-minimal` uses less storage, but may have difficulty generating thumbnails for some image and video formats.
+
+***Useful Flags***
+
+- `-h`, `--help`: show the command-line help and exit.
+- `--port PORT`: print the server URL and test this port. If omitted, the script tries to read the port from the same `.env` uploaded to the server.
+- `--no-restart`: upload and replace the server binary without stopping or starting the server.
+- `--ffmpeg-rebuild`: ignore the cached FFmpeg build for the target ABI and rebuild it. Use with `--ffmpeg` to opt into that build without prompting.
 
 #### What you still need to set up yourself
 
@@ -239,11 +258,11 @@ If you opt into step 9, the script:
 | Go                     |            ✅ Always            | Must be in `PATH`.                                                                                                                                                                                                                |
 | `adb` / platform-tools |            ✅ Always            | Must be in `PATH`, with the phone connected and authorized (USB debugging enabled — see [Requirements](#requirements)).                                                                                                           |
 | `.env` file            |         ✅ Recommended          | Not created by the script — you must write it yourself beforehand (see [Configuration](#configuration)). Without it, the server can still start, but without your storage path, secrets, or FFmpeg/thumbnail settings configured. |
-| FFmpeg/FFprobe build   |           ❌ Optional           | Purely opt-in prompt. Skipping it just means no native thumbnail generation on-device — see [Building FFmpeg for Android](#building-ffmpeg-for-android) for what that means and your fallback options.                            |
+| FFmpeg/FFprobe build   |           ❌ Optional           | Asked about in interactive mode; use `--ffmpeg` or `--no-ffmpeg` to choose without prompting. Skipping it means no native thumbnail generation on-device — see [Building FFmpeg for Android](#building-ffmpeg-for-android) for alternatives. |
 | `git`                  |           ❌ Optional           | Only needed if you want the script to auto-clone FFmpeg for you when the `FFmpeg/` folder doesn't already exist.                                                                                                                  |
 | `make`                 |           ❌ Optional           | Only needed if you opt into building FFmpeg/FFprobe.                                                                                                                                                                              |
 
-Re-run the script whenever you switch to a different phone/architecture, or the very first time you set one up — it rebuilds both the server and (if you opt in) FFmpeg/FFprobe for whichever device is currently connected.
+Re-run the script whenever you switch to a different phone/architecture, or the first time you set one up. The server is rebuilt each run; FFmpeg/FFprobe is reused from cache when the source revision and build flags match for that ABI. Use `--ffmpeg-rebuild` to force a fresh FFmpeg build.
 
 ### Manual Deployment
 
@@ -332,7 +351,7 @@ export STRIP=$TOOLCHAIN/bin/llvm-strip
 
 ##### 4. Configure FFmpeg
 
-The configuration below builds a minimal FFmpeg containing only the components Wireless Drive actually needs.
+The configuration below follows the standard FFmpeg build used by `auto_deploy.py`, enabling the components Wireless Drive uses for thumbnails. FFmpeg components not explicitly disabled by these options may also be enabled by the configure defaults.
 
 > If you're rebuilding for a different architecture than last time (e.g. switched phones), run `make distclean` before re-configuring — the previous build's object files won't match the new target and will cause the build to fail or produce a binary that doesn't run on the new device.
 
@@ -344,12 +363,16 @@ The configuration below builds a minimal FFmpeg containing only the components W
     --cc="$CC" \
     --cxx="$CXX" \
     --ar="$AR" \
+    --nm="$TOOLCHAIN/llvm-nm" \
+    --ranlib="$TOOLCHAIN/llvm-ranlib" \
     --strip="$STRIP" \
     --enable-cross-compile \
     \
     --disable-shared \
     --enable-static \
-  
+    --disable-doc \
+    --disable-debug \
+    \
     --enable-ffmpeg \
     --enable-ffprobe \
     --disable-ffplay \
