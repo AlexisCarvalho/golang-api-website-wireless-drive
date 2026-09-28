@@ -146,7 +146,7 @@
     }
 
     .site-header h1::before {
-      content: '📸';
+      content: attr(data-icon);
       font-size: 1.3em;
       filter: drop-shadow(0 0 15px rgba(167, 139, 250, 0.6));
       animation: iconPulse 3s ease-in-out infinite;
@@ -747,7 +747,7 @@
     <h1><a href="/">Wireless Drive</a></h1>
     <nav>
       <a href="/website/dashboard" class="back-link" data-i18n="backLink">← Voltar</a>
-      <a href="#" id="deleteBtn" class="delete-link" data-i18n="deleteLink">🗑️ Excluir</a>
+      <a href="#" id="deleteBtn" class="delete-link" data-i18n="deleteLink"></a>
     </nav>
   </header>
 
@@ -755,9 +755,9 @@
     <div class="card">
       <div class="title-row">
         <h1 id="mediaTitle" data-i18n="loadingTitle">Carregando...</h1>
-        <button class="edit-icon-btn" id="editInfoBtn" type="button" title="Editar título" data-i18n-title="editTitleTooltip">✏️</button>
+        <button class="edit-icon-btn" id="editInfoBtn" type="button" title="Editar título" data-i18n="iconEdit" data-i18n-title="editTitleTooltip"></button>
       </div>
-      <div class="muted" id="mediaDate" data-i18n="loadingDate">📅 Carregando...</div>
+      <div class="muted" id="mediaDate" data-i18n="loadingDate"></div>
 
       <div class="edit-form" id="editForm">
         <div>
@@ -765,7 +765,7 @@
           <input type="text" id="editTitleInput" maxlength="255">
         </div>
         <div class="edit-actions">
-          <button class="btn save" id="saveInfoBtn" type="button" data-i18n="btnSave">💾 Salvar</button>
+          <button class="btn save" id="saveInfoBtn" type="button" data-i18n="btnSave"></button>
           <button class="btn cancel" id="cancelEditBtn" type="button" data-i18n="btnCancel">Cancelar</button>
         </div>
       </div>
@@ -778,18 +778,18 @@
 
       <div class="actions">
         <a class="download" href="#" id="downloadLink">
-          <button class="btn download" data-i18n="btnDownload">⬇️ Baixar</button>
+          <button class="btn download" data-i18n="btnDownload"></button>
         </a>
         <button class="btn generate" id="generateThumbnailBtn" type="button" style="display:none" data-i18n="btnGenerateThumbnail"></button>
         <button class="btn delete-thumb" id="deleteThumbnailBtn" type="button" style="display:none" data-i18n="btnDeleteThumbnail"></button>
       </div>
 
       <div class="playlist-nav" id="playlistNav">
-        <button class="btn nav-btn" id="navPrevBtn" type="button" data-i18n-title="navPrevTooltip">⏮️</button>
+        <button class="btn nav-btn" id="navPrevBtn" type="button" data-i18n="iconPrevious" data-i18n-title="navPrevTooltip"></button>
         <span class="nav-counter" id="navCounter">– / –</span>
-        <button class="btn nav-btn" id="navNextBtn" type="button" data-i18n-title="navNextTooltip">⏭️</button>
-        <button class="btn nav-toggle" id="navAutoplayBtn" type="button" data-i18n-title="navAutoplayTooltip">▶️ <span data-i18n="navAutoplay">Autoplay</span></button>
-        <button class="btn nav-toggle" id="navShuffleBtn" type="button" data-i18n-title="navShuffleTooltip">🔀 <span data-i18n="navShuffle">Aleatório</span></button>
+        <button class="btn nav-btn" id="navNextBtn" type="button" data-i18n="iconNext" data-i18n-title="navNextTooltip"></button>
+        <button class="btn nav-toggle" id="navAutoplayBtn" type="button" data-i18n-title="navAutoplayTooltip"><span data-i18n="iconAutoplay"></span> <span data-i18n="navAutoplay">Autoplay</span></button>
+        <button class="btn nav-toggle" id="navShuffleBtn" type="button" data-i18n-title="navShuffleTooltip"><span data-i18n="iconShuffle"></span> <span data-i18n="navShuffle">Aleatório</span></button>
       </div>
 
       <div class="file-info">
@@ -843,14 +843,14 @@
       }
 
       document.querySelectorAll('.muted').forEach(function(el){
-        var txt = el.textContent.replace(/^📅\s*/, '').trim();
+        var txt = el.textContent.replace(i18n.t('iconSortDate'), '').trim();
         var d = new Date(txt);
         if(!isNaN(d.getTime())){
           var opts = { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' };
           try{
-            el.textContent = '📅 ' + d.toLocaleString(i18n.locale, opts);
+            el.textContent = i18n.t('iconSortDate') + ' ' + d.toLocaleString(i18n.locale, opts);
           }catch(e){
-            el.textContent = '📅 ' + d.toLocaleDateString(i18n.locale);
+            el.textContent = i18n.t('iconSortDate') + ' ' + d.toLocaleDateString(i18n.locale);
           }
         }
       });
@@ -880,7 +880,12 @@
 
     function showAppAlert(message, type) {
       type = type || 'error';
-      var icons = { error: '❌', warning: '⚠️', success: '✅', info: 'ℹ️' };
+      var icons = {
+        error: i18n.t('iconToastError'),
+        warning: i18n.t('iconToastWarning'),
+        success: i18n.t('iconToastSuccess'),
+        info: i18n.t('iconToastInfo')
+      };
 
       var container = getToastContainer();
 
@@ -1280,9 +1285,9 @@
           if(!isNaN(d.getTime())){
             var opts = { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' };
             try{
-              document.getElementById('mediaDate').textContent = '📅 ' + d.toLocaleString(i18n.locale, opts);
+              document.getElementById('mediaDate').textContent = i18n.t('iconSortDate') + ' ' + d.toLocaleString(i18n.locale, opts);
             }catch(e){
-              document.getElementById('mediaDate').textContent = '📅 ' + d.toLocaleDateString(i18n.locale);
+              document.getElementById('mediaDate').textContent = i18n.t('iconSortDate') + ' ' + d.toLocaleDateString(i18n.locale);
             }
           }
 
@@ -1357,7 +1362,7 @@
                 audioElement.style.background = 'linear-gradient(135deg, rgba(167,139,250,0.08) 0%, rgba(192,132,252,0.08) 100%)';
 
                 audioElement.innerHTML =
-                  '<div style="font-size:4rem;filter:drop-shadow(0 4px 20px rgba(167,139,250,0.3))">🎧</div>' +
+                  '<div style="font-size:4rem;filter:drop-shadow(0 4px 20px rgba(167,139,250,0.3))">' + i18n.t('iconAudioPlayer') + '</div>' +
                   '<audio id="player" controls preload="metadata" style="width:100%;max-width:500px">' +
                     '<source src="' + API_URL + streamData.url + '" type="' + data.MimeType + '">' +
                     i18n.t('audioNotSupported') +
@@ -1422,7 +1427,7 @@
           } else {
 
             container.innerHTML =
-              '<div style="font-size:5rem;text-align:center;padding:60px 20px;background:linear-gradient(135deg,rgba(167,139,250,0.08) 0%,rgba(192,132,252,0.08) 100%);border-radius:16px;margin:24px 0;filter:drop-shadow(0 4px 20px rgba(167,139,250,0.2))">📄</div>';
+              '<div style="font-size:5rem;text-align:center;padding:60px 20px;background:linear-gradient(135deg,rgba(167,139,250,0.08) 0%,rgba(192,132,252,0.08) 100%);border-radius:16px;margin:24px 0;filter:drop-shadow(0 4px 20px rgba(167,139,250,0.2))">' + i18n.t('iconFile') + '</div>';
 
             document.querySelector('.btn.download').textContent =
               i18n.t('btnDownloadFile');
@@ -1561,7 +1566,7 @@
       deleteThumbBtn.textContent = i18n.t('btnDeletingThumb');
 
       authFetch('/api/media/' + mediaID + '/delete-thumbnail', {
-        method: 'POST',
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
       })
         .then(function(resp) {

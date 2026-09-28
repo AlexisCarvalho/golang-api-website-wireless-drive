@@ -19,6 +19,7 @@
       footerSignIn: 'Faça login',
       msgLoginSuccess: '✅ Login realizado com sucesso!',
       msgLoginErrorDefault: 'Código ou senha incorretos',
+      errorPrefix: '❌ ',
       msgRegisterSuccess: '✅ Conta criada com sucesso! Faça login.',
       msgRegisterErrorDefault: 'Erro ao criar conta',
       msgConnectionError: '❌ Erro ao conectar: ',
@@ -124,7 +125,40 @@
       errorServerResponse: 'Erro na resposta do servidor:',
       confirmDeleteMedia: 'Tem certeza que deseja excluir esta mídia?',
       errorDelete: 'Erro ao excluir',
-      errorDeleteWithMsg: 'Erro ao excluir: '
+      errorDeleteWithMsg: 'Erro ao excluir: ',
+
+      // Interface icons
+      iconAccount: '🗃️',
+      iconLogin: '🔐',
+      iconPassword: '🔑',
+      iconUser: '👤',
+      iconBrand: '📸',
+      iconStorage: '💾',
+      iconSearch: '🔍',
+      iconSortDate: '📅',
+      iconSortAsc: '🔤',
+      iconSortDesc: '🔡',
+      iconViewGrid: '▦',
+      iconViewList: '☰',
+      iconImage: '🖼️',
+      iconVideo: '🎬',
+      iconAudio: '🎵',
+      iconFile: '📄',
+      iconEdit: '✏️',
+      iconAutoplay: '▶️',
+      iconShuffle: '🔀',
+      iconPrevious: '⏮️',
+      iconNext: '⏭️',
+      iconToastError: '❌',
+      iconToastWarning: '⚠️',
+      iconToastSuccess: '✅',
+      iconToastInfo: 'ℹ️',
+      iconAudioPlayer: '🎧',
+      iconUploadFolder: '📁',
+      iconFileVideo: '🎥',
+      iconFileSheet: '📊',
+      iconArchive: '📦',
+      iconUploadTip: '💡'
     },
     en: {
       tagline: 'Access your files',
@@ -145,6 +179,7 @@
       footerSignIn: 'Log in',
       msgLoginSuccess: '✅ Login successful!',
       msgLoginErrorDefault: 'Incorrect code or password',
+      errorPrefix: '❌ ',
       msgRegisterSuccess: '✅ Account created! Please log in.',
       msgRegisterErrorDefault: 'Error creating account',
       msgConnectionError: '❌ Connection error: ',
@@ -250,7 +285,40 @@
       errorServerResponse: 'Server response error:',
       confirmDeleteMedia: 'Are you sure you want to delete this media?',
       errorDelete: 'Error deleting',
-      errorDeleteWithMsg: 'Error deleting: '
+      errorDeleteWithMsg: 'Error deleting: ',
+
+      // Interface icons
+      iconAccount: '🗃️',
+      iconLogin: '🔐',
+      iconPassword: '🔑',
+      iconUser: '👤',
+      iconBrand: '📸',
+      iconStorage: '💾',
+      iconSearch: '🔍',
+      iconSortDate: '📅',
+      iconSortAsc: '🔤',
+      iconSortDesc: '🔡',
+      iconViewGrid: '▦',
+      iconViewList: '☰',
+      iconImage: '🖼️',
+      iconVideo: '🎬',
+      iconAudio: '🎵',
+      iconFile: '📄',
+      iconEdit: '✏️',
+      iconAutoplay: '▶️',
+      iconShuffle: '🔀',
+      iconPrevious: '⏮️',
+      iconNext: '⏭️',
+      iconToastError: '❌',
+      iconToastWarning: '⚠️',
+      iconToastSuccess: '✅',
+      iconToastInfo: 'ℹ️',
+      iconAudioPlayer: '🎧',
+      iconUploadFolder: '📁',
+      iconFileVideo: '🎥',
+      iconFileSheet: '📊',
+      iconArchive: '📦',
+      iconUploadTip: '💡'
 
     }
   };
@@ -301,6 +369,13 @@
       const key = el.dataset.i18nAria;
       if (translations[currentLang][key] !== undefined) {
         el.setAttribute('aria-label', translations[currentLang][key]);
+      }
+    });
+
+    document.querySelectorAll('[data-i18n-icon]').forEach(function (el) {
+      const key = el.dataset.i18nIcon;
+      if (translations[currentLang][key] !== undefined) {
+        el.setAttribute('data-icon', translations[currentLang][key]);
       }
     });
 

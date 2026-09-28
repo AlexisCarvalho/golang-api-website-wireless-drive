@@ -149,7 +149,7 @@
     }
 
     .site-header h1::before {
-      content: '📸';
+      content: attr(data-icon);
       font-size: 1.3em;
       filter: drop-shadow(0 0 15px rgba(167, 139, 250, 0.6));
       animation: iconPulse 3s ease-in-out infinite;
@@ -594,10 +594,6 @@
       transform: translateY(0);
     }
 
-    .upload-form button[type="submit"]::after {
-      content: ' 🚀';
-    }
-
     /* File Preview Area */
     .file-preview {
       margin-top: 24px;
@@ -660,7 +656,7 @@
     }
 
     .tips h3::before {
-      content: '💡';
+      content: attr(data-icon);
     }
 
     .tips ul {
@@ -832,7 +828,7 @@
   <script src="/static/i18n.js"></script>
 
   <header class="site-header">
-    <h1><a href="/">Wireless Drive</a></h1>
+    <h1 data-i18n-icon="iconBrand"><a href="/">Wireless Drive</a></h1>
     <a href="/website/dashboard" class="back-button"><span data-i18n="backLink">Voltar</span></a>
   </header>
 
@@ -844,7 +840,7 @@
       <!-- Drop Zone -->
       <div id="dropZone" class="drop-zone">
         <div class="drop-zone-content">
-          <div class="drop-icon">📁</div>
+          <div class="drop-icon" data-i18n="iconUploadFolder"></div>
           <p class="drop-text" data-i18n="dropText">Arraste seus arquivos aqui</p>
           <p class="drop-subtext" data-i18n="dropSubtext">ou</p>
           <label for="fileInput" class="select-files-btn" data-i18n="selectFilesButton">Selecione arquivos</label>
@@ -859,7 +855,7 @@
         <div id="filesList" class="files-list"></div>
       </div>
 
-      <button type="submit" id="submitBtn" style="display: none;" data-i18n="uploadButton">Enviar Uploads 🚀</button>
+      <button type="submit" id="submitBtn" style="display: none;" data-i18n="uploadButton"></button>
       <div id="uploadMessage"></div>
 
       <!-- Upload Progress -->
@@ -869,7 +865,7 @@
     </form>
 
     <div class="tips">
-      <h3 data-i18n="tipsTitle">Dicas</h3>
+      <h3 data-i18n="tipsTitle" data-i18n-icon="iconUploadTip">Dicas</h3>
       <ul>
         <li data-i18n="uploadSupportedFormats">Formatos suportados: JPG, PNG, GIF, MP4, WebM, PDF, DOC, DOCX, PPT, XLS, TXT, ZIP</li>
         <li data-i18n="uploadImageMaxSize">Tamanho máximo recomendado para imagens: 50MB</li>
@@ -889,16 +885,6 @@
 
     // Animações GSAP
     window.addEventListener("DOMContentLoaded", function() {
-      // Stagger header elements
-      gsap.from(".site-header > *", {
-        opacity: 0,
-        y: 20,
-        duration: 0.8,
-        stagger: 0.1,
-        ease: "power2.out",
-        delay: 0.3
-      });
-
       gsap.from('.upload-form', {
         opacity: 0,
         y: 30,
@@ -1002,14 +988,14 @@
       const presentExts = ['ppt', 'pptx'];
       const zipExts = ['zip', 'rar', '7z'];
 
-      if (imageExts.includes(ext)) return '🖼️';
-      if (videoExts.includes(ext)) return '🎥';
-      if (audioExts.includes(ext)) return '🎵';
-      if (docExts.includes(ext)) return '📄';
-      if (sheetExts.includes(ext)) return '📊';
-      if (presentExts.includes(ext)) return '📊';
-      if (zipExts.includes(ext)) return '📦';
-      return '📁';
+      if (imageExts.includes(ext)) return i18n.t('iconImage');
+      if (videoExts.includes(ext)) return i18n.t('iconFileVideo');
+      if (audioExts.includes(ext)) return i18n.t('iconAudio');
+      if (docExts.includes(ext)) return i18n.t('iconFile');
+      if (sheetExts.includes(ext)) return i18n.t('iconFileSheet');
+      if (presentExts.includes(ext)) return i18n.t('iconFileSheet');
+      if (zipExts.includes(ext)) return i18n.t('iconArchive');
+      return i18n.t('iconUploadFolder');
     }
 
     function renderFilesList() {
@@ -1105,7 +1091,12 @@
     // mesmo visual do resto do site. type: 'error' | 'warning' | 'success' | 'info'
     function showAppAlert(message, type) {
       type = type || 'error';
-      var icons = { error: '❌', warning: '⚠️', success: '✅', info: 'ℹ️' };
+      var icons = {
+        error: i18n.t('iconToastError'),
+        warning: i18n.t('iconToastWarning'),
+        success: i18n.t('iconToastSuccess'),
+        info: i18n.t('iconToastInfo')
+      };
 
       var container = getToastContainer();
 

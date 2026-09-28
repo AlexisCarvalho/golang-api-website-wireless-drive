@@ -504,7 +504,7 @@
   <div class="container">
     <div class="auth-card">
       <div class="logo">
-        <div class="logo-icon">🗃️</div>
+        <div class="logo-icon" data-i18n="iconAccount"></div>
         <h1>Wireless Drive</h1>
         <p data-i18n="tagline">Acesse seus arquivos</p>
       </div>
@@ -521,7 +521,7 @@
             <label data-i18n="labelCode">Código</label>
             <div class="input-wrapper">
               <input type="text" id="loginCode" required pattern="[A-Za-z0-9]+" title="Apenas letras e números" placeholder="ex: abc123" data-i18n-placeholder="placeholderCode">
-              <span class="input-icon">🔐</span>
+              <span class="input-icon" data-i18n="iconLogin"></span>
             </div>
           </div>
 
@@ -529,7 +529,7 @@
             <label data-i18n="labelPassword">Senha</label>
             <div class="input-wrapper">
               <input type="password" id="loginPassword" required placeholder="••••••••">
-              <span class="input-icon">🔑</span>
+              <span class="input-icon" data-i18n="iconPassword"></span>
             </div>
           </div>
 
@@ -549,7 +549,7 @@
             <label data-i18n="labelName">Nome</label>
             <div class="input-wrapper">
               <input type="text" id="registerName" required placeholder="Seu nome completo" data-i18n-placeholder="placeholderName">
-              <span class="input-icon">👤</span>
+              <span class="input-icon" data-i18n="iconUser"></span>
             </div>
           </div>
 
@@ -557,7 +557,7 @@
             <label data-i18n="labelCode">Código</label>
             <div class="input-wrapper">
               <input type="text" id="registerCode" required pattern="[A-Za-z0-9]+" title="Apenas letras e números" placeholder="ex: abc123" data-i18n-placeholder="placeholderCode">
-              <span class="input-icon">🔐</span>
+              <span class="input-icon" data-i18n="iconLogin"></span>
             </div>
           </div>
 
@@ -565,7 +565,7 @@
             <label data-i18n="labelPassword">Senha</label>
             <div class="input-wrapper">
               <input type="password" id="registerPassword" required placeholder="••••••••">
-              <span class="input-icon">🔑</span>
+              <span class="input-icon" data-i18n="iconPassword"></span>
             </div>
           </div>
 
@@ -698,7 +698,7 @@
             window.location.href = '/website/dashboard';
           }, 500);
         } else {
-          messageDiv.textContent = '❌ ' + (result.error || i18n.t('msgLoginErrorDefault'));
+          messageDiv.textContent = i18n.t('errorPrefix') + (result.error || i18n.t('msgLoginErrorDefault'));
           messageDiv.className = 'message error';
         }
       } catch (error) {
@@ -748,7 +748,7 @@
             document.getElementById('loginCode').value = code;
           }, 1500);
         } else {
-          messageDiv.textContent = '❌ ' + (result.error || i18n.t('msgRegisterErrorDefault'));
+          messageDiv.textContent = i18n.t('errorPrefix') + (result.error || i18n.t('msgRegisterErrorDefault'));
           messageDiv.className = 'message error';
         }
       } catch (error) {

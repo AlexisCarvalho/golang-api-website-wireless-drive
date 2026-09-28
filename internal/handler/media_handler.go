@@ -53,7 +53,7 @@ func (h *MediaHandler) RegisterRoutes(r *gin.Engine) {
 		mediaRoutes.GET("/owner", middleware.AuthMiddleware(), h.GetMediaByOwner)
 		mediaRoutes.GET("/owner/missing-thumbnails", middleware.AuthMiddleware(), h.GetMediaWithMissingThumbnails)
 		mediaRoutes.POST("/:id/generate-thumbnail", middleware.AuthMiddleware(), h.GenerateThumbnail)
-		mediaRoutes.POST("/:id/delete-thumbnail", middleware.AuthMiddleware(), h.DeleteThumbnail)
+		mediaRoutes.DELETE("/:id/delete-thumbnail", middleware.AuthMiddleware(), h.DeleteThumbnail)
 		mediaRoutes.GET("/:id/file", middleware.AuthMiddleware(), h.GetMediaFile)
 		mediaRoutes.GET("/:id/stream-url", middleware.AuthMiddleware(), h.GetStreamURL)
 		mediaRoutes.GET("/:id/stream", h.StreamMedia)

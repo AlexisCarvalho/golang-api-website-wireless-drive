@@ -143,7 +143,7 @@
     }
 
     .site-header h1::before {
-      content: '📸';
+      content: attr(data-icon);
       font-size: 1.3em;
       filter: drop-shadow(0 0 15px rgba(167, 139, 250, 0.6));
       animation: iconPulse 3s ease-in-out infinite;
@@ -556,7 +556,7 @@
     }
 
     #gallery > p::before {
-      content: '🎬';
+      content: attr(data-icon);
       display: block;
       font-size: 5rem;
       margin-bottom: 24px;
@@ -1260,30 +1260,30 @@
   <script src="/static/i18n.js"></script>
 
   <header class="site-header">
-    <h1>Wireless Drive</h1>
+    <h1 data-i18n-icon="iconBrand">Wireless Drive</h1>
     <nav>
-      <a href="/website/upload" id="uploadLink" data-i18n="navUpload">📤 Upload</a>
-      <a href="#" id="logoutBtn" data-i18n="navLogout">🚪 Sair</a>
+      <a href="/website/upload" id="uploadLink" data-i18n="navUpload"></a>
+      <a href="#" id="logoutBtn" data-i18n="navLogout"></a>
     </nav>
   </header>
 
   <main class="container">
     <section class="controls">
       <button id="toggleView">
-        <span id="viewIcon">☰</span> <span id="toggleViewLabel" data-i18n="viewToggleToCompact">Alternar Visualização</span>
+        <span id="viewIcon" data-i18n="iconViewList"></span> <span id="toggleViewLabel" data-i18n="viewToggleToCompact">Alternar Visualização</span>
       </button>
       <button id="toggleSortBtn">
-        <span id="sortIcon">📅</span> <span id="sortLabel" data-i18n="sortByDate">Data</span>
+        <span id="sortIcon" data-i18n="iconSortDate"></span> <span id="sortLabel" data-i18n="sortByDate">Data</span>
       </button>
       <div class="disk-usage" id="diskUsage" aria-label="Uso de armazenamento">
-        <span class="disk-usage-icon">💾</span>
+        <span class="disk-usage-icon" data-i18n="iconStorage"></span>
         <div class="disk-usage-track">
           <div class="disk-usage-fill" id="diskUsageFill"></div>
         </div>
         <span class="disk-usage-values" id="diskUsageValues">Carregando...</span>
       </div>
       <div class="search-box" id="searchBox">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon" data-i18n="iconSearch"></span>
         <input type="text" id="searchInput" placeholder="Pesquisar mídias..." autocomplete="off" data-i18n-placeholder="searchPlaceholder">
         <button type="button" class="search-clear" id="searchClear" aria-label="Limpar pesquisa" data-i18n-aria="searchClearAria">✕</button>
       </div>
@@ -1309,7 +1309,12 @@
 
     function showAppAlert(message, type) {
       type = type || 'error';
-      var icons = { error: '❌', warning: '⚠️', success: '✅', info: 'ℹ️' };
+      var icons = {
+        error: i18n.t('iconToastError'),
+        warning: i18n.t('iconToastWarning'),
+        success: i18n.t('iconToastSuccess'),
+        info: i18n.t('iconToastInfo')
+      };
 
       var container = getToastContainer();
 
@@ -1417,13 +1422,19 @@
       });
     }
 
+    function setGalleryMessage(markup) {
+      gallery.innerHTML = markup;
+      var message = gallery.querySelector('p');
+      if (message) message.setAttribute('data-icon', i18n.t('iconVideo'));
+    }
+
     // Applies the current search filter and sort mode, then re-renders the gallery
     function applyFiltersAndRender() {
       var filtered = filterMedias(allMedias);
       var sorted = sortMedias(filtered);
 
       if (allMedias.length > 0 && filtered.length === 0) {
-        gallery.innerHTML = '<p>' + i18n.t('noResultsFor') + ' "' + searchQuery + '".</p>';
+        setGalleryMessage('<p>' + i18n.t('noResultsFor') + ' "' + searchQuery + '".</p>');
         return;
       }
 
@@ -1473,15 +1484,15 @@
           img.alt = media.Title;
           thumb.appendChild(img);
         } else if (media.Type === 'audio') {
-          thumb.innerHTML = '<div class="no-thumb">🎵</div>';
+          thumb.innerHTML = '<div class="no-thumb">' + i18n.t('iconAudio') + '</div>';
         } else if (media.Type === 'others' || media.Type === 'other') {
-          thumb.innerHTML = '<div class="no-thumb">📄</div>';
+          thumb.innerHTML = '<div class="no-thumb">' + i18n.t('iconFile') + '</div>';
         } else if (media.Type === 'image') {
-          thumb.innerHTML = '<div class="no-thumb">🖼️</div>';
+          thumb.innerHTML = '<div class="no-thumb">' + i18n.t('iconImage') + '</div>';
         } else if (media.Type === 'video') {
-          thumb.innerHTML = '<div class="no-thumb">🎬</div>';
+          thumb.innerHTML = '<div class="no-thumb">' + i18n.t('iconVideo') + '</div>';
         } else {
-          thumb.innerHTML = '<div class="no-thumb">📄</div>';
+          thumb.innerHTML = '<div class="no-thumb">' + i18n.t('iconFile') + '</div>';
         }
 
         var meta = document.createElement('div');
@@ -1532,12 +1543,12 @@
             // Filter (if searching), sort and render
             applyFiltersAndRender();
           } else {
-            gallery.innerHTML = '<p>' + i18n.t('noMediaYet') + ' <a href="/website/upload">' + i18n.t('uploadCta') + '</a>.</p>';
+            setGalleryMessage('<p>' + i18n.t('noMediaYet') + ' <a href="/website/upload">' + i18n.t('uploadCta') + '</a>.</p>');
           }
         })
         .catch(function(err) {
           console.error('Failed to load media:', err);
-          gallery.innerHTML = '<p>' + i18n.t('loadMediaError') + ' <a href="/website/upload">' + i18n.t('uploadCta') + '</a>.</p>';
+          setGalleryMessage('<p>' + i18n.t('loadMediaError') + ' <a href="/website/upload">' + i18n.t('uploadCta') + '</a>.</p>');
         });
     }
 
@@ -1608,11 +1619,11 @@
         if(mode === 'compact'){
           gallery.classList.remove('grid');
           gallery.classList.add('compact');
-          btn.innerHTML = '<span id="viewIcon">▦</span> ' + i18n.t('viewToggleToGrid');
+          btn.innerHTML = '<span id="viewIcon">' + i18n.t('iconViewGrid') + '</span> ' + i18n.t('viewToggleToGrid');
         } else {
           gallery.classList.remove('compact');
           gallery.classList.add('grid');
-          btn.innerHTML = '<span id="viewIcon">☰</span> ' + i18n.t('viewToggleToCompact');
+          btn.innerHTML = '<span id="viewIcon">' + i18n.t('iconViewList') + '</span> ' + i18n.t('viewToggleToCompact');
         }
       }
 
@@ -1782,7 +1793,7 @@
         var errorDiv = document.createElement('div');
         errorDiv.className = 'lightbox-error';
         errorDiv.innerHTML = `
-          <div class="lightbox-error-icon">⚠️</div>
+          <div class="lightbox-error-icon">${i18n.t('iconToastWarning')}</div>
           <div class="lightbox-error-title">${i18n.t('errorTitle')}</div>
           <div class="lightbox-error-message">${errorMsg}</div>
           <div class="lightbox-error-actions">
@@ -2109,7 +2120,7 @@
         if (lb_navPlaylist.length > 1) {
           lb_autoplayBtnEl = document.createElement('button');
           lb_autoplayBtnEl.className = 'lightbox-side-btn lightbox-autoplay-btn';
-          lb_autoplayBtnEl.innerHTML = '▶️';
+          lb_autoplayBtnEl.textContent = i18n.t('iconAutoplay');
           lb_autoplayBtnEl.classList.toggle('active', lb_autoplayEnabled);
           lb_autoplayBtnEl.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -2122,7 +2133,7 @@
 
           lb_shuffleBtnEl = document.createElement('button');
           lb_shuffleBtnEl.className = 'lightbox-side-btn lightbox-shuffle-btn';
-          lb_shuffleBtnEl.innerHTML = '🔀';
+          lb_shuffleBtnEl.textContent = i18n.t('iconShuffle');
           lb_shuffleBtnEl.classList.toggle('active', lb_shuffleEnabled);
           lb_shuffleBtnEl.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -2270,7 +2281,7 @@
 
           var header = document.createElement('div');
           header.className = 'rename-modal-header';
-          header.innerHTML = '<span class="rename-modal-icon">✏️</span><h3>' + i18n.t('editTitleTooltip') + '</h3>';
+          header.innerHTML = '<span class="rename-modal-icon">' + i18n.t('iconEdit') + '</span><h3>' + i18n.t('editTitleTooltip') + '</h3>';
 
           var label = document.createElement('label');
           label.textContent = i18n.t('labelTitle');
@@ -2330,7 +2341,7 @@
             errorEl.textContent = '';
             saveBtn.disabled = true;
             var originalLabel = saveBtn.innerHTML;
-            saveBtn.innerHTML = '⏳ ' + i18n.t('btnSaving');
+            saveBtn.innerHTML = i18n.t('btnSaving');
 
             authFetch('/api/media/' + media.ID, {
               method: 'PUT',
@@ -2344,7 +2355,7 @@
                 });
               })
               .then(function(){
-                saveBtn.innerHTML = '✅ ' + i18n.t('btnSaved');
+                saveBtn.innerHTML = i18n.t('btnSaved');
                 setTimeout(function(){
                   close();
                   loadMedias();
@@ -2388,7 +2399,7 @@
         function deleteThumbForMedia(media){
           if (!confirm(i18n.t('confirmDeleteThumb'))) return;
           authFetch('/api/media/' + media.ID + '/delete-thumbnail', {
-            method: 'POST',
+            method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
           })
             .then(function(resp){
@@ -2444,7 +2455,7 @@
             downloadMedia(media);
           }));
 
-          ctxMenu.appendChild(ctxMenuItem('✏️ ' + i18n.t('editTitleTooltip'), function(){
+          ctxMenu.appendChild(ctxMenuItem(i18n.t('iconEdit') + ' ' + i18n.t('editTitleTooltip'), function(){
             renameMedia(media);
           }));
 
@@ -2504,21 +2515,21 @@
       var sortBtn = document.getElementById('toggleSortBtn');
       if (sortBtn) {
         function updateSortButtonText() {
-          var icon = '📅';
+          var icon = i18n.t('iconSortDate');
           var label = i18n.t('sortByDate');
 
           switch(sortMode) {
             case 'asc':
-              icon = '🔤';
+              icon = i18n.t('iconSortAsc');
               label = i18n.t('sortAsc');
               break;
             case 'desc':
-              icon = '🔡';
+              icon = i18n.t('iconSortDesc');
               label = i18n.t('sortDesc');
               break;
             case 'date':
             default:
-              icon = '📅';
+              icon = i18n.t('iconSortDate');
               label = i18n.t('sortByDate');
           }
 
