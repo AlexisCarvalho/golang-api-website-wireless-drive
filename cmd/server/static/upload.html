@@ -1105,7 +1105,7 @@
       toast.innerHTML =
         '<div class="app-toast-icon">' + (icons[type] || icons.info) + '</div>' +
         '<div class="app-toast-message"></div>' +
-        '<button type="button" class="app-toast-close" aria-label="Fechar">✕</button>';
+        '<button type="button" class="app-toast-close" aria-label="' + i18n.t('closeBtn') + '">✕</button>';
       toast.querySelector('.app-toast-message').textContent = message;
 
       container.appendChild(toast);

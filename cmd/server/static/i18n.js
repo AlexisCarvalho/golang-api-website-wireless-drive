@@ -1,6 +1,7 @@
 (function () {
   const translations = {
     pt: {
+      accountPageTitle: 'Conta - Wireless Drive',
       tagline: 'Acesse seus arquivos',
       tabLogin: 'Login',
       tabRegister: 'Cadastro',
@@ -8,6 +9,7 @@
       labelPassword: 'Senha',
       labelName: 'Nome',
       placeholderCode: 'ex: abc123',
+      codePatternTitle: 'Use apenas letras e números',
       placeholderName: 'Seu nome completo',
       btnLogin: 'Entrar',
       btnLoginLoading: 'Entrando...',
@@ -54,10 +56,11 @@
       // Dashboard
       navUpload: '📤 Upload',
       navLogout: '🚪 Sair',
+      diskUsageAria: 'Uso de armazenamento',
       searchPlaceholder: 'Pesquisar mídias...',
       searchClearAria: 'Limpar pesquisa',
-      toastCloseAria: 'Fechar',
       btnGeneratingThumbnails: 'Gerando...',
+      diskUsageUnavailable: 'Indisponível',
       viewToggleToCompact: 'Ver como Grade Compacta',
       viewToggleToGrid: 'Ver como Grid',
       sortByDate: 'Data',
@@ -79,6 +82,20 @@
       errorGeneratingThumbnails: 'Impossível gerar thumbnails, servidor indisponível ou erro inesperado',
       authForbidden: 'Você não tem permissão para acessar isso. Redirecionando para o login...',
       authExpired: 'Sua sessão expirou. Redirecionando para o login...',
+
+      // Ilha do player
+      viewToggleToList: 'Lista',
+      navShuffleTooltip: 'Aleatório',
+      navPrevTooltip: 'Anterior',
+      navNextTooltip: 'Próximo',
+      navAutoplayTooltip: 'Autoplay',
+      playBtn: 'Reproduzir',
+      pauseBtn: 'Pausar',
+      playerAria: 'Player',
+      seekAria: 'Progresso',
+      volumeAria: 'Volume',
+      muteBtn: 'Silenciar',
+      unmuteBtn: 'Ativar som',
 
       // Media page
       navShuffle: 'Aleatório',
@@ -161,6 +178,7 @@
       iconUploadTip: '💡'
     },
     en: {
+      accountPageTitle: 'Account - Wireless Drive',
       tagline: 'Access your files',
       tabLogin: 'Login',
       tabRegister: 'Register',
@@ -168,6 +186,7 @@
       labelPassword: 'Password',
       labelName: 'Name',
       placeholderCode: 'e.g. abc123',
+      codePatternTitle: 'Use letters and numbers only',
       placeholderName: 'Your full name',
       btnLogin: 'Log In',
       btnLoginLoading: 'Logging in...',
@@ -214,10 +233,11 @@
       // Dashboard
       navUpload: '📤 Upload',
       navLogout: '🚪 Log Out',
+      diskUsageAria: 'Storage usage',
       searchPlaceholder: 'Search media...',
       searchClearAria: 'Clear search',
-      toastCloseAria: 'Close',
       btnGeneratingThumbnails: 'Generating...',
+      diskUsageUnavailable: 'Unavailable',
       viewToggleToCompact: 'View as Compact Grid',
       viewToggleToGrid: 'View as Grid',
       sortByDate: 'Date',
@@ -239,6 +259,20 @@
       errorGeneratingThumbnails: 'Unable to generate thumbnails, server unavailable or unexpected error',
       authForbidden: "You don't have permission to access this. Redirecting to login...",
       authExpired: 'Your session has expired. Redirecting to login...',
+
+      // Player island
+      viewToggleToList: 'List',
+      navShuffleTooltip: 'Shuffle',
+      navPrevTooltip: 'Previous',
+      navNextTooltip: 'Next',
+      navAutoplayTooltip: 'Autoplay',
+      playBtn: 'Play',
+      pauseBtn: 'Pause',
+      playerAria: 'Player',
+      seekAria: 'Progress',
+      volumeAria: 'Volume',
+      muteBtn: 'Mute',
+      unmuteBtn: 'Unmute',
 
       // Media page
       navShuffle: 'Random',
